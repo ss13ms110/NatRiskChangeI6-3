@@ -127,3 +127,16 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+## CUSTOMS
+# for raw data
+/raw_data
+
+# for softs
+# for 1_preProcess
+/softs/1_preProcess/*
+!softs/1_preProcess/scripts
+
+# for 2_McCalc
+/softs/2_McCalc/*
+!softs/2_McCalc/scripts
