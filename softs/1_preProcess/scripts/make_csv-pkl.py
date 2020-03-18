@@ -9,12 +9,14 @@ import numpy as np
 import pandas as pd
 from dateutil import rrule
 import datetime as dt
+import csv
 
 
 #MAIN
 # paths
 hdfPath = '../../../raw_data/isc_data/1900-2019_csv'
-pklFile = 'isc_events_inc-NaN.pkl'
+RAWpklFile = 'isc_events_inc-NaN.pkl'
+pklFile = 'isc_events.pkl'
 sYr = 1900
 sMn = 1
 sDy = 1
@@ -35,29 +37,47 @@ DateList = rrule.rrule(rrule.MONTHLY, dtstart=stDate , until=enDate)
 df = pd.DataFrame()
 for date in DateList:
     dateSplt = str(date.date()).split("-") 
-    dateStr = dateSplt[0] + "-" + dateSplt[1].replace("0","") + "-" + dateSplt[2].replace("0","")
-
+    dateStr = dateSplt[0] + "-" + str(int(dateSplt[1])) + "-" + str(int(dateSplt[2]))
+    
     csvfN = hdfPath + '/' + dateStr + '.csv'
+    
+    # check for the presence of one event
+    with open(csvfN) as f:
+        Nl = sum(1 for line in f)
+    
+    f.close()
+    if Nl > 1:
+        csvFid = open(csvfN, 'r')
+        # read csv file and reverse the order as csv files starts from the last day of the month
+        csvRows = csv.reader(csvFid)
 
-    csvdf = pd.read_csv(csvfN)
+        # convert to list
+        csvRowsList = list(csvRows)
 
-    # remove "T" and "Z"
-    strDateTime = [s.split("T")[0] + " " + s.split("T")[1].split("Z")[0] for s in csvdf["time"]]
+        # get reversed csv rows
+        csvRevRows = list(reversed(csvRowsList[1:]))
 
-    CSVdateTime = [dt.datetime.strptime(i, '%Y-%m-%d %H:%M:%S.%f') for i in strDateTime]
+        csvdf = pd.DataFrame(csvRevRows, columns=csvRowsList[0])
+        
+        # remove "T" and "Z"
+        strDateTime = [s.split("T")[0] + " " + s.split("T")[1].split("Z")[0] for s in csvdf["time"]]
 
-    csvdf["time"] = CSVdateTime
+        CSVdateTime = [dt.datetime.strptime(i, '%Y-%m-%d %H:%M:%S.%f') for i in strDateTime]
 
-    # replace "reviewed" in status with "1"
-    csvdf.loc[csvdf["status"] == "reviewed", "status"] = 1
-    csvdf.loc[csvdf["status"] == "automatic", "status"] = 0
+        csvdf["time"] = CSVdateTime
 
-    df = df.append(csvdf[["status", "latitude", "longitude", "depth", "mag", "magType", "time"]])
+        # replace "reviewed" in status with "1"
+        csvdf.loc[csvdf["status"] == "reviewed", "status"] = 1
+        csvdf.loc[csvdf["status"] == "automatic", "status"] = 0
 
-df.to_pickle(pklFile)
+        df = df.append(csvdf[["status", "latitude", "longitude", "depth", "mag", "magType", "time"]])
 
+df.to_pickle(RAWpklFile)
 
-# in order to remove NaN values from the pkl file use 
-# df = pd.read_pickle('isc_events_inc-NaN.pkl')
-# dfNew = df.dropna()
-# dfNew.to_pickle('isc_events.pkl')
+# quality filtering
+# convert strings to numbers
+df[['mag', 'depth', 'latitude', 'longitude']]=df[['mag', 'depth', 'latitude', 'longitude']].apply(pd.to_numeric, errors='coerce')
+
+# drop NaNs
+dfNew = df.dropna()
+dfNew.to_pickle(pklFile)

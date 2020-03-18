@@ -33,12 +33,13 @@ srcmodCata = './../1_preProcess/outputs/srcmodCata.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 polyDir = 'outputs/polys'
 McFile = './outputs/Mc_MAXC_1Yr.txt'
+McFigsPath = './figs/Mc_plots'
 
 # open output file
 fout = open(McFile, 'w')
 
 # parameters
-dT = 1          # 1 year
+dT = 365          # 1 year
 Hdist = 100     # km
 dHdist = 5
 Vdist = 50      # depth of volume (km)
@@ -94,14 +95,16 @@ for line in srcmodFid:
     eDate = sDate + dt.timedelta(days=dT) - dt.timedelta(seconds=1)     # sTime + time duration (e.g. 
                                                                         # 365) - 1 second to be within 
                                                                         # time duration
-
-    AScata = funcFile.getISCcata(ISCdf, sDate, eDate)
-
+    AScata, resp = funcFile.getISCcata(ISCdf, sDate, eDate, polyBuffer)
+    
     # check for the length of aftershock catalog
-    if len(AScata['mag']) > 10:    
+    if resp == 1:    
         #----------------------------------
         # calculate Mc
         #----------------------------------
+
+        # get days distribution of aftershocks
+        ASdays = funcFile.getDays(AScata)
 
         # create mag bins
         magBins = np.arange(0,10.1,binSize)
@@ -111,11 +114,27 @@ for line in srcmodFid:
         # write to file
         fout.write('%s  %6.2f\n' %(srcmodFlN.split(".")[0], Mc))
         
+        # for figure
+        f = plt.figure(figsize=(15,5))
+        ax1 = f.add_subplot(121)
+        ax2 = f.add_subplot(122)
+        # plotting
+        ax1.set_xlabel('Days')
+        ax1.set_ylabel('Mag')
+        ax1.scatter(ASdays, AScata['mag'])
+        ax1.set_ylim(0,10)
+        ax1.set_xlim(-5,365)
+
+        ax2.set_xlabel('Mag')
+        ax2.set_ylabel('# of events')
+        ax2.set_yscale('log')
+        ax2.scatter((edges[1:] + edges[:-1])/2, hist)
+        ax2.vlines(Mc, min(hist), max(hist))
+        ax2.set_xlim(-0.1,10)
+        ylim = int(np.ceil(np.log10(max(hist))))
+        ax2.set_ylim(0.1, 10**ylim)
+        f.suptitle("%s" %(srcmodFlN.split(".")[0]), fontsize=20)
+        f.savefig("%s/%s.png" %(McFigsPath, srcmodFlN.split(".")[0]), dpi=200)
+
 fout.close()
-        # plt.figure()
-        # plt.yscale('log')
-        # plt.scatter((edges[1:] + edges[:-1])/2, hist)
-        # plt.vlines(Mc, 0.1, 200)
-        # plt.ylim(0.1,200)
-        # plt.xlim(-0.1,10)
-        # plt.show()
+        

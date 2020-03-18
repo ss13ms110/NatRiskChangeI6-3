@@ -127,26 +127,50 @@ def XY2Buffer(polyData):
     return Poly
 
 # function to get ISC catalog within time frame
-def getISCcata(ISCdf, sDate, eDate):
+def getISCcata(ISCdf, sDate, eDate, polyBuffer):
     
     #make sure UTM works
     ISCdf = ISCdf[(ISCdf.latitude < 84) & (ISCdf.latitude > -80)]
-    ISCdf = ISCdf[(ISCdf['depth']!=0.0)]
-
+    ISCdf = ISCdf[(ISCdf.depth != 0.0)]
+    
     # time filtering
     ISCdf = ISCdf[(ISCdf.time > sDate) & (ISCdf.time < eDate)]
-
-    # space filtering
-    #ISCdf = ISCdf[() &]
-
-    # write to a dictionary
-    catalog = dict()
-    catalog['latitude'] = list(ISCdf['latitude'])
-    catalog['longitude'] = list(ISCdf['longitude'])
-    catalog['mag'] = list(ISCdf['mag'])
-    catalog['depth'] = list(ISCdf['depth'])
     
-    return catalog
+    # space filtering
+    ISCdfNew = pd.DataFrame()
+    
+    # get rectangular region (this has been done to reduce the # of iteration in next step)
+    loMin, laMin, loMax, laMax = list(polyBuffer.bounds)
+    ISCdf = ISCdf[(ISCdf.latitude > laMin) & (ISCdf.latitude < laMax) & (ISCdf.longitude > loMin) & (ISCdf.longitude < loMax)]
+    
+    # loop for polygon region
+    for i in range(len(ISCdf['latitude'])):
+        Ala = ISCdf.iloc[i]['latitude']
+        Alo = ISCdf.iloc[i]['longitude']
+        
+        pt = Point(Alo, Ala)
+        if polyBuffer.contains(pt):
+            ISCdfNew = ISCdfNew.append(ISCdf.iloc[[i]])
+
+    catalog = dict()
+    
+    # check for empty dataframe
+    if not ISCdfNew.empty:
+        # write to a dictionary
+        catalog['latitude'] = list(ISCdfNew['latitude'])
+        catalog['longitude'] = list(ISCdfNew['longitude'])
+        catalog['mag'] = list(ISCdfNew['mag'])
+        catalog['depth'] = list(ISCdfNew['depth'])
+        catalog['time'] = list(ISCdfNew['time'])
+        
+        if len(catalog['latitude']) >= 10:
+            resp = 1
+        else:
+            resp = 0
+
+    else:
+        resp = 0
+    return catalog, resp
 
 # function to calculate Mc
 def McCalc(Ascata, magBins, McBuff):
@@ -161,3 +185,31 @@ def McCalc(Ascata, magBins, McBuff):
     Mc = midMag[indx] + McBuff
     
     return hist, edges, Mc
+
+# function to calculate days of event occurrence
+def getDays(AScata):
+    secInDay = 86400.0
+    dateTime = AScata['time']
+    jday1 = dateTime[0].date().timetuple().tm_yday
+    tm = 0
+    d = []
+    for i in range(len(dateTime)):
+        jday = dateTime[i].date().timetuple().tm_yday
+
+        tim = dateTime[i].time()
+        evSec = tim.hour*3600 + tim.minute*60 + tim.second
+        fracSec = evSec/secInDay
+
+        if jday == jday1:
+            d.append(tm + fracSec)
+        else:
+            dysTmp = (dateTime[i].date() - dateTime[i-1].date()).days
+            if dysTmp == 0:
+                dys = 1
+            else:
+                dys = dysTmp
+            tm += dys
+            jday1 = jday
+            d.append(tm + fracSec)
+    d = np.array(d)
+    return d
