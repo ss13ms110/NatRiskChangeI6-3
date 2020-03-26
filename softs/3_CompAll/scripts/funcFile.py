@@ -178,4 +178,4 @@ def getRegion(latlon, polyBuffer):
         pt = Point(latlon[i,1], latlon[i,0])
 
         areaIndex.append(polyBuffer.contains(pt))
-    return areaIndex
+    return areaIndex, "ss"
