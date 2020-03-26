@@ -190,5 +190,5 @@ for srcRow in srcRows:
             else:
                 stressDf['%s' %(stressDir)] = stressAll
 
-            print stressDf
+            print stressDf, "ss"
 
