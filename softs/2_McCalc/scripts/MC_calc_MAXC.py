@@ -67,6 +67,7 @@ for line in srcmodFid:
     Se = float(line.split()[6])
     la = float(line.split()[7])
     lo = float(line.split()[8])
+    Mw = float(line.split()[10])
 
     print bcol.OKBLUE + "Working on %s..." %(srcmodFlN.split(".")[0]) + bcol.ENDC
     # condition to use polygons from saved files or to generate new
@@ -111,8 +112,14 @@ for line in srcmodFid:
 
         hist, edges, Mc = funcFile.McCalc(AScata, magBins, McBuff)
 
+        # calculate Mc(t) using eq. from Helmstetter et.al. 2006
+        Mct = Mw - 4.5 - 0.75*np.log(dT)
+
+        if Mct < 2:
+            Mct = 2
+
         # write to file
-        fout.write('%s  %6.2f\n' %(srcmodFlN.split(".")[0], Mc))
+        fout.write('%s  %6.2f  %6.2f\n' %(srcmodFlN.split(".")[0], Mc, Mct))
         
         # for figure
         f = plt.figure(figsize=(15,5))

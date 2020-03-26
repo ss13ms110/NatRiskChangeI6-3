@@ -140,3 +140,7 @@ dmypy.json
 # for 2_McCalc
 /softs/2_McCalc/*
 !softs/2_McCalc/scripts
+
+# for 3_CompALl
+/softs/3_CompAll/*
+!softs/3_CompAll/scripts
