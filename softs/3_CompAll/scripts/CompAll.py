@@ -179,13 +179,7 @@ for srcRow in srcRows:
                     lonAll = np.append(lonAll, Sdata[areaIndex,1])
                     stressAll = np.append(stressAll, Sdata[areaIndex,2])
                     depAll = np.append(depAll, np.full(len(Sdata[areaIndex,0]), d))
-                    
-<<<<<<< Updated upstream
-=======
-                    if d == 2.5:
-                        for i in range(len(latAll)):
-                            print '%7.3f  %8.3f  %f' %(latAll[i], lonAll[i], stressAll[i])
->>>>>>> Stashed changes
+
                 else:
                     stressAll = np.append(stressAll, Sdata[areaIndex,2])
                     
@@ -195,8 +189,6 @@ for srcRow in srcRows:
             
             else:
                 stressDf['%s' %(stressDir)] = stressAll
-<<<<<<< Updated upstream
+
             print stressDf
-=======
-            # print stressDf
->>>>>>> Stashed changes
+
