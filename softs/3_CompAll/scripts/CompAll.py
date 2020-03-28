@@ -31,12 +31,13 @@ ASResp = raw_input(bcol.BOLD + "Read AS data from saved [Y] or from ISCpkl [N]: 
 
 
 # Paths
-srcCataFile = './../1_preProcess/outputs/testCata.txt'
+srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
 srcmodPath = './../../raw_data/srcmod/srcmod_fsp_2019Mar'
 polyDir = './../2_McCalc/outputs/polys'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/stress_values'
+CombPklFile = './outputs/combData.pkl'
 
 
 # variables
@@ -58,6 +59,12 @@ print bcol.OKGREEN+"Pickle file loaded...\n" + bcol.ENDC
 srcFid = open(srcCataFile, 'r')
 
 srcRows = srcFid.readlines()[1:]
+
+# declare df columns
+dfColumns = ['time', 'MainshockID', 'latitude', 'longitude', 'depth', 'mag', 'R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
+
+# create an empty dataframe to hold all the combined data
+CombDf = pd.DataFrame([], columns=dfColumns)
 
 for srcRow in srcRows:
     Yr = int(srcRow.split()[0])
@@ -190,5 +197,33 @@ for srcRow in srcRows:
             else:
                 stressDf['%s' %(stressDir)] = stressAll
 
-            print stressDf
+            
+# -----------------------------------------------------------------------
+#              for each aftershock create a database
+#              with mainshockId, R and stress values
+# -----------------------------------------------------------------------
+            # update lat, lon and depth from dataframe
+            latAll = np.array(stressDf['lat'])
+            lonAll = np.array(stressDf['lon'])
+            depAll = np.array(stressDf['dep'])
+        for i in range(len(catalog['latitude'])):
+            laAS = catalog['latitude'][i]
+            loAS = catalog['longitude'][i]
+            deAS = catalog['depth'][i]
+            tmAs = catalog['time'][i]
+            mgAs = catalog['mag'][i]
 
+
+            # calculate the nearest distance to the grid
+            dd = funcFile.dist3D(laAS, loAS, deAS, latAll, lonAll, depAll)
+            depMinIndx = np.argmin(dd)
+            tmpList = [tmAs, srcFname.split('.')[0], laAS, loAS, deAS, mgAs, R[i]] 
+            
+            tmpList = tmpList + stressDf.iloc[depMinIndx, [3,4,5,6,7,8]].to_numpy().tolist()
+
+            # tmpDf = pd.DataFrame([tmpList + stressDf.iloc[depMinIndx, [3,4,5,6,7,8]].to_numpy().tolist()], columns=dfColumns)
+
+            CombDf = CombDf.append(pd.Series(tmpList, index=CombDf.columns), ignore_index=True)
+
+# save dataframe to a pickle file
+CombDf.to_pickle(CombPklFile)
