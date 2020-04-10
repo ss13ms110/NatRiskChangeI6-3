@@ -4,6 +4,17 @@ import numpy as np
 from shapely.geometry import Polygon, LinearRing, Point
 import pandas as pd
 
+# For coloured outputs in terminal
+class bcol:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 # distance in 2D
 def dist(lat1, lon1, lat2, lon2):
         """
@@ -26,6 +37,33 @@ def dist3D(lat1, lon1, z1,  lat2, lon2, z2):
         np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.cos(np.radians(lon1-lon2)))
     r = np.sqrt(np.square(D) + np.square(z1-z2))
     return r
+
+# function to calculate days of event occurrence
+def getDays(MSdatetime,dateTime):
+    secInDay = 86400.0
+    jday1 = MSdatetime.date().timetuple().tm_yday
+    tm = 0
+    d = []
+    for i in range(len(dateTime)):
+        jday = dateTime[i].date().timetuple().tm_yday
+
+        tim = dateTime[i].time()
+        evSec = tim.hour*3600 + tim.minute*60 + tim.second
+        fracSec = evSec/secInDay
+
+        if jday == jday1:
+            d.append(tm + fracSec)
+        else:
+            dysTmp = (dateTime[i].date() - dateTime[i-1].date()).days
+            if dysTmp == 0:
+                dys = 1
+            else:
+                dys = dysTmp
+            tm += dys
+            jday1 = jday
+            d.append(tm + fracSec)
+    d = np.array(d)
+    return d
 
 # to read srcmod .fsp file
 def read_fsp_file(inname):
@@ -169,6 +207,19 @@ def CalcR(filePath, catalog, slipTol):
         R.append(min(r[(slip > slipCut)]))
 
     return np.array(R)
+
+# calculate Mc(t)
+def CalcMct(Mw, MSdatetime, AStime):
+    
+    ASdaysTmp = getDays(MSdatetime, AStime)
+
+    ASdays = [0.01 if x == 0.0 else x for x in ASdaysTmp]
+
+    tmpMct = Mw - 4.5 - 0.75*np.log10(ASdays)
+
+    Mct = [2.0 if x < 2.0 else x for x in tmpMct]
+
+    return Mct
 
 # get poly region
 def getRegion(latlon, polyBuffer):

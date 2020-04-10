@@ -4,7 +4,7 @@
 # Inputs: Stress values (MAS, OOP, VM, VMC, MS), mainshock 
 # catalog, aftershock pickle file, polygons
 # Outputs: CompData.pkl
-# Header: []
+# Header: ['time', 'MainshockID', 'latitude', 'longitude', 'depth', 'mag', 'R', 'Mw-mag', 'Mc(t)', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 
 import numpy as np
 import pandas as pd
@@ -12,22 +12,10 @@ import funcFile
 import os
 import datetime as dt
 
-# FUNCTIONS
-# For coloured outputs in terminal
-class bcol:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
 
 # user inputs
-polyResp = raw_input(bcol.BOLD + "Read Polygon from saved [Y] or generate NEW [N]: " + bcol.ENDC)
-ASResp = raw_input(bcol.BOLD + "Read AS data from saved [Y] or from ISCpkl [N]: " + bcol.ENDC)
+polyResp = raw_input(funcFile.bcol.BOLD + "Read Polygon from saved [Y] or generate NEW [N]: " + funcFile.bcol.ENDC)
+ASResp = raw_input(funcFile.bcol.BOLD + "Read AS data from saved [Y] or from ISCpkl [N]: " + funcFile.bcol.ENDC)
 
 
 # Paths
@@ -44,7 +32,7 @@ CombPklFile = './outputs/combData.pkl'
 dT = 365        # 1 year
 Hdist = 100     # km
 Dlist = np.arange(2.5,50,5)
-slipTol = 80    # in %
+slipTol = 20    # in %
 
 stressList = ['homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 
@@ -53,7 +41,7 @@ stressList = ['homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 # -----------------------------------------------------------------------
 # load pkl file in memory
 ISCdf = pd.read_pickle(iscPkl)
-print bcol.OKGREEN+"Pickle file loaded...\n" + bcol.ENDC
+print funcFile.bcol.OKGREEN+"Pickle file loaded...\n" + funcFile.bcol.ENDC
 
 # open the srcmodCatalog file to read mainshocks
 srcFid = open(srcCataFile, 'r')
@@ -61,7 +49,7 @@ srcFid = open(srcCataFile, 'r')
 srcRows = srcFid.readlines()[1:]
 
 # declare df columns
-dfColumns = ['time', 'MainshockID', 'latitude', 'longitude', 'depth', 'mag', 'R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
+dfColumns = ['time', 'MainshockID', 'latitude', 'longitude', 'depth', 'mag', 'R', 'Mw-mag', 'Mc(t)', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 
 # create an empty dataframe to hold all the combined data
 CombDf = pd.DataFrame([], columns=dfColumns)
@@ -82,7 +70,7 @@ for srcRow in srcRows:
     # get all aftershocks related to this mainshock 
     # for next 1 year in a region of 100x100x50
 
-    print bcol.OKBLUE + "Working on %s..." %(srcFname.split(".")[0]) + bcol.ENDC
+    print funcFile.bcol.OKBLUE + "Working on %s..." %(srcFname.split(".")[0]) + funcFile.bcol.ENDC
     # condition to use polygons from saved files or to generate new
     if polyResp == 'N' or polyResp == 'n':
         # get polygon buffer around the mainshock fault
@@ -101,7 +89,7 @@ for srcRow in srcRows:
         polyBuffer = funcFile.XY2Buffer(polyData)
 
     else:
-        print bcol.FAIL + "Wrong input for Polygon!! Terminating" + bcol.ENDC
+        print funcFile.bcol.FAIL + "Wrong input for Polygon!! Terminating" + funcFile.bcol.ENDC
         quit()
 
     # check for aftershocks, if pkl files are present of not
@@ -113,6 +101,7 @@ for srcRow in srcRows:
                                                                             # time duration
         ISCdfNew, resp = funcFile.getISCcata(ISCdf, sDate, eDate, polyBuffer)
 
+        ASfileFlg = 0
         if resp == 1:
             ASpklFname = ASpklPath + '/' + srcFname.split('.')[0] + '.pkl'
 
@@ -120,110 +109,120 @@ for srcRow in srcRows:
             
             # write individual AS data to pickle files
             ASpklDf.to_pickle(ASpklFname)
+            ASfileFlg = 1
 
     elif ASResp == 'Y' or ASResp == 'y':
+        ASfileFlg = 0
         ASpklFname = ASpklPath + '/' + srcFname.split('.')[0] + '.pkl'
         
-        ASpklDf = pd.read_pickle(ASpklFname)     
+        if os.path.isfile(ASpklFname):
+            ASpklDf = pd.read_pickle(ASpklFname)
+            ASfileFlg = 1  
 
     else:
-        print bcol.FAIL + "Wrong input for AS pickle!! Terminating" + bcol.ENDC
+        print funcFile.bcol.FAIL + "Wrong input for AS pickle!! Terminating" + funcFile.bcol.ENDC
         quit()
     
 # -----------------------------------------------------------------------
 #             AS data at one place
 # -----------------------------------------------------------------------
 
-    # create a dictionary of AS data
-    catalog = dict()
+    if ASfileFlg == 1:
+        # create a dictionary of AS data
+        catalog = dict()
 
-    catalog['latitude'] = list(ASpklDf['latitude'])
-    catalog['longitude'] = list(ASpklDf['longitude'])
-    catalog['mag'] = list(ASpklDf['mag'])
-    catalog['depth'] = list(ASpklDf['depth'])
-    catalog['time'] = list(ASpklDf['time'])
+        catalog['latitude'] = list(ASpklDf['latitude'])
+        catalog['longitude'] = list(ASpklDf['longitude'])
+        catalog['mag'] = list(ASpklDf['mag'])
+        catalog['depth'] = list(ASpklDf['depth'])
+        catalog['time'] = list(ASpklDf['time'])
 
-# -----------------------------------------------------------------------
-#     calculate nearest diatance of aftershock from the fault plane
-# -----------------------------------------------------------------------
-    slpFile = srcmodPath + '/' + srcFname
-    R = funcFile.CalcR(slpFile, catalog, slipTol)
-    
-# -----------------------------------------------------------------------
-#              accumulate all stress data in one dataframe
-# -----------------------------------------------------------------------
-    # check if stress files are present for all models
-    for stressDir in stressList:
-        EvDirPath = stressDirPath + '/' + stressDir + '/' + srcFname.split('.')[0]
+    # -----------------------------------------------------------------------
+    #     calculate nearest diatance of aftershock from the fault plane
+    # -----------------------------------------------------------------------
+        slpFile = srcmodPath + '/' + srcFname
+        R = funcFile.CalcR(slpFile, catalog, slipTol)
         
-        evResp = 0
-        if os.path.isdir(EvDirPath):
-            evResp = 1
-    
-    # if stress files are there then execute the stress-aftershock allocation
-    if evResp == 1:
+    # -----------------------------------------------------------------------
+    #             calculate Mc(t) for each aftershock using eq. 
+    #                    from Helmstetter et.al. 2006
+    # -----------------------------------------------------------------------
+        MSdatetime = dt.datetime(Yr, Mn, Dy, Hr, Mi, int(Se))
+        Mct = funcFile.CalcMct(Mw, MSdatetime, catalog['time'])
 
-        # loop for stress models
+    # -----------------------------------------------------------------------
+    #              accumulate all stress data in one dataframe
+    # -----------------------------------------------------------------------
+        # check if stress files are present for all models
         for stressDir in stressList:
-            # path to event dir
-            EvStressDir = stressDirPath + '/' + stressDir + '/' + srcFname.split('.')[0]
+            EvDirPath = stressDirPath + '/' + stressDir + '/' + srcFname.split('.')[0]
+            
+            evResp = 0
+            if os.path.isdir(EvDirPath):
+                evResp = 1
+        
+        # if stress files are there then execute the stress-aftershock allocation
+        if evResp == 1:
 
-            latAll = []
-            lonAll = []
-            depAll = []
-            stressAll = []
-            # loop for layers
-            for d in Dlist:
-                stressFname = EvStressDir + '/' + srcFname.split('.')[0] + '_' + str(d) + '.txt'
-                Sdata = np.loadtxt(stressFname)
-            
-            
-                if d == 2.5:
-                    areaIndex = funcFile.getRegion(Sdata[:,0:2], polyBuffer)
+            # loop for stress models
+            for stressDir in stressList:
+                # path to event dir
+                EvStressDir = stressDirPath + '/' + stressDir + '/' + srcFname.split('.')[0]
+
+                latAll = []
+                lonAll = []
+                depAll = []
+                stressAll = []
+                # loop for layers
+                for d in Dlist:
+                    stressFname = EvStressDir + '/' + srcFname.split('.')[0] + '_' + str(d) + '.txt'
+                    Sdata = np.loadtxt(stressFname)
                 
-                if stressDir == 'homo_MAS':
-                    latAll = np.append(latAll, Sdata[areaIndex,0])
-                    lonAll = np.append(lonAll, Sdata[areaIndex,1])
-                    stressAll = np.append(stressAll, Sdata[areaIndex,2])
-                    depAll = np.append(depAll, np.full(len(Sdata[areaIndex,0]), d))
-
-                else:
-                    stressAll = np.append(stressAll, Sdata[areaIndex,2])
+                
+                    if d == 2.5:
+                        areaIndex = funcFile.getRegion(Sdata[:,0:2], polyBuffer)
                     
+                    if stressDir in stressList[:3]:
+                        latAll = np.append(latAll, Sdata[areaIndex,0])
+                        lonAll = np.append(lonAll, Sdata[areaIndex,1])
+                        stressAll = np.append(stressAll, Sdata[areaIndex,2])
+                        depAll = np.append(depAll, np.full(len(Sdata[areaIndex,0]), d))
+
+                    else:
+                        stressAll = np.append(stressAll, Sdata[:,2])                    
                 
-            if stressDir == 'homo_MAS':
-                stressDf = pd.DataFrame(np.column_stack((latAll, lonAll, depAll, stressAll)), columns=['lat', 'lon', 'dep', '%s' %(stressDir)])
-            
-            else:
-                stressDf['%s' %(stressDir)] = stressAll
+                    
+                if stressDir == 'homo_MAS':
+                    stressDf = pd.DataFrame(np.column_stack((latAll, lonAll, depAll, stressAll)), columns=['lat', 'lon', 'dep', '%s' %(stressDir)])
+                
+                else:
+                    stressDf['%s' %(stressDir)] = stressAll
 
-            
-# -----------------------------------------------------------------------
-#              for each aftershock create a database
-#              with mainshockId, R and stress values
-# -----------------------------------------------------------------------
-            # update lat, lon and depth from dataframe
-            latAll = np.array(stressDf['lat'])
-            lonAll = np.array(stressDf['lon'])
-            depAll = np.array(stressDf['dep'])
-        for i in range(len(catalog['latitude'])):
-            laAS = catalog['latitude'][i]
-            loAS = catalog['longitude'][i]
-            deAS = catalog['depth'][i]
-            tmAs = catalog['time'][i]
-            mgAs = catalog['mag'][i]
+                
+    # -----------------------------------------------------------------------
+    #              for each aftershock create a database
+    #              with mainshockId, R and stress values
+    # -----------------------------------------------------------------------
+                # update lat, lon and depth from dataframe
+                latAll = np.array(stressDf['lat'])
+                lonAll = np.array(stressDf['lon'])
+                depAll = np.array(stressDf['dep'])
+            for i in range(len(catalog['latitude'])):
+                laAS = catalog['latitude'][i]
+                loAS = catalog['longitude'][i]
+                deAS = catalog['depth'][i]
+                tmAs = catalog['time'][i]
+                mgAs = catalog['mag'][i]
 
 
-            # calculate the nearest distance to the grid
-            dd = funcFile.dist3D(laAS, loAS, deAS, latAll, lonAll, depAll)
-            depMinIndx = np.argmin(dd)
-            tmpList = [tmAs, srcFname.split('.')[0], laAS, loAS, deAS, mgAs, R[i]] 
-            
-            tmpList = tmpList + stressDf.iloc[depMinIndx, [3,4,5,6,7,8]].to_numpy().tolist()
+                # calculate the nearest distance to the grid
+                dd = funcFile.dist3D(laAS, loAS, deAS, latAll, lonAll, depAll)
+                depMinIndx = np.argmin(dd)
+                tmpList = [tmAs, srcFname.split('.')[0], laAS, loAS, deAS, mgAs, R[i], Mw-mgAs, Mct[i]] 
+                
+                tmpList = tmpList + stressDf.iloc[depMinIndx, [3,4,5,6,7,8]].to_numpy().tolist()
 
-            # tmpDf = pd.DataFrame([tmpList + stressDf.iloc[depMinIndx, [3,4,5,6,7,8]].to_numpy().tolist()], columns=dfColumns)
-
-            CombDf = CombDf.append(pd.Series(tmpList, index=CombDf.columns), ignore_index=True)
+                CombDf = CombDf.append(pd.Series(tmpList, index=CombDf.columns), ignore_index=True)
 
 # save dataframe to a pickle file
 CombDf.to_pickle(CombPklFile)
