@@ -203,7 +203,8 @@ def CalcR(filePath, catalog, slipTol):
         zi = float(catalog['depth'][i])
 
         r = dist3D(lati, loni, zi, lat, lon, z)
-        slipCut = max(slip)*(1-slipTol/100.0)
+        slipCut = np.median(slip)
+        # slipCut = max(slip)*(1-slipTol/100.0)
         R.append(min(r[(slip > slipCut)]))
 
     return np.array(R)

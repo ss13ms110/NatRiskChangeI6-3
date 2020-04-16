@@ -32,7 +32,7 @@ CombPklFile = './outputs/combData.pkl'
 dT = 365        # 1 year
 Hdist = 100     # km
 Dlist = np.arange(2.5,50,5)
-slipTol = 20    # in %
+slipTol = 20    # in %  | DEPRECATED median slip is used instead
 
 stressList = ['homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 

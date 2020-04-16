@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from astropy.table import Table
 import random
+import timeit as ti
 
 # For coloured outputs in terminal
 class bcol:
@@ -15,6 +16,24 @@ class bcol:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
+# Print function
+def printLoad(strng, Stime):
+    return bcol.OKGREEN + "\n" + strng + bcol.ENDC + " %0.2f " %((ti.default_timer() - Stime)/60.0) + bcol.OKGREEN + "minutes\n" + bcol.ENDC
+
+def printProcess(strng, Stime):
+    return bcol.OKBLUE + strng + bcol.ENDC + " %0.2f " %((ti.default_timer() - Stime)/60.0) + bcol.OKBLUE + "minutes" + bcol.ENDC
+
+def printRun(strng, i, Stime):
+    return bcol.OKBLUE + strng + bcol.ENDC + " %d " %(i+1) + bcol.OKBLUE + "at" + bcol.ENDC + " %0.2f " %((ti.default_timer() - Stime)/60.0) + bcol.OKBLUE + "minutes" + bcol.ENDC
+
+# sigmoid filter
+def sigmoid(arry, scale, shift):
+    d1 = scale*arry - shift
+    d2 = np.exp(-d1)
+    sig = 1/(1+d2)
+
+    return sig
 
 # function to choose aftershocks only above Mc
 def filterMc(combDataload, McValueFile):
@@ -32,6 +51,15 @@ def filterMc(combDataload, McValueFile):
         combData = combData.append(combDataTmp)
     
     return combData
+
+# function to filter and scale stress values
+def filterStress(df, a, b, tags):
+    for tag in tags:
+        df[tag] = sigmoid(df[tag], a, b)  
+
+    # remove infs and naNs
+    df = df.replace([np.inf, -np.inf], np.NaN).dropna()
+    return df
 
 # calculate b value using Aki estimator
 def bVal_Mmax_avgTag(dat, tag):
@@ -81,7 +109,11 @@ def calc_b(dat, binsize, tag):
         bVal.append(b)
         MmaxVal.append(Mmax)
         avgTagVal.append(avgTag)
-
+    
+    bVal = np.array(bVal)
+    MmaxVal = np.array(MmaxVal)
+    avgTagVal = np.array(avgTagVal)
     return bVal, MmaxVal, avgTagVal
+
 
 
