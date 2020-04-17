@@ -10,6 +10,7 @@ import pandas as pd
 import funcFile
 from astropy.io import ascii
 import matplotlib.pyplot as plt
+import pickle
 import timeit as ti
 import warnings
 warnings.filterwarnings("ignore")
@@ -25,7 +26,7 @@ outPath = './outputs'
 figPath = './figs'
 
 #variables
-itr = 10
+itr = 1000
 binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
 a = 1  # scale
@@ -73,6 +74,15 @@ for tag in tags:
     else:
         binsDict[tag] = np.linspace(Lcut2, Ucut, binLen)
 
+# generate empty dictionaly to hold b-values
+bValDict = dict.fromkeys(tags)
+MmaxValDict = dict.fromkeys(tags)
+
+# create empty list, later to hold all montecarlo realizations
+for tag in tags:
+    bValDict[tag] = [[]]*(binLen-1)
+    MmaxValDict[tag] = [[]]*(binLen-1)
+
 
 # load data from srcCata.txt
 srcDat = ascii.read(srcCataFile)
@@ -81,14 +91,6 @@ print funcFile.printLoad("SRCMOD catalog loaded in", Stime)
 trimmedIds = [x['srcmodId'][:17] for x in srcDat]
 
 srcDat['srcmodId'][:] = trimmedIds
-
-# generate empty dictionaly to hold b-values
-bValDict = dict.fromkeys(tags)
-MmaxValDict = dict.fromkeys(tags)
-
-for tag in tags:
-    bValDict[tag+'n'] = np.full(binLen-1, itr)
-    MmaxValDict[tag+'n'] = np.full(binLen-1, itr)
 
 # run montecarlo loop
 for i in range(itr):
@@ -108,6 +110,7 @@ for i in range(itr):
         # calculate bValue and Mmax
         bVal, MmaxVal, avgTagVal = funcFile.calc_b(sortedDat, binsize, tag)
         
+        
         # digitize values in bins
         binTagVal = np.digitize(avgTagVal, binsDict[tag])
         avgbVal = [bVal[binTagVal == j].mean() for j in range(1, len(binsDict[tag]))]
@@ -116,50 +119,67 @@ for i in range(itr):
         avgbVal = np.array(avgbVal)
         avgMmax = np.array(avgMmax)
 
-        # find index of NaN places and subtract 1 from N
-        bNaNindx = np.where(np.isnan(avgbVal))
-        mNaNindx = np.where(np.isnan(avgMmax))
-
-        bValDict[tag+'n'][bNaNindx] -= 1
-        MmaxValDict[tag+'n'][mNaNindx] -= 1
-
-        # replace NaN by zero
-        avgbVal = np.nan_to_num(avgbVal)
-        avgMmax = np.nan_to_num(avgMmax)
-
-        # sum values and add in dictionary
-        if i == 0:
-            bValDict[tag] = avgbVal
-            MmaxValDict[tag] = avgMmax 
-
-        else:
-            bValDict[tag] = bValDict[tag] + avgbVal
-            MmaxValDict[tag] = MmaxValDict[tag] + avgMmax
-
-newbinsDict = dict()
-for tag in tags:
-    bValDict[tag] = bValDict[tag] / bValDict[tag+'n']
-    MmaxValDict[tag] = MmaxValDict[tag] / MmaxValDict[tag+'n']
-
-    # get midpoint of bins
-    newbinsDict[tag] = [(a+b)/2.0 for a, b in zip(binsDict[tag][:len(binsDict[tag])-1], binsDict[tag][1:])]
+        bValDict[tag] = [ lst + [avgbVal[j]] for j,lst in enumerate(bValDict[tag])]
+        MmaxValDict[tag] = [ lst + [avgMmax[j]] for j,lst in enumerate(MmaxValDict[tag])]
 
 
-# -------saving the data points-------
-# create a comined dict
+
+# remove NaNs from the lists
 bValSave = dict()
 MmaxSave = dict()
+midbinsDict = dict()
 for tag in tags:
-    bValSave[tag] = newbinsDict[tag]
-    bValSave[tag+'-bVal'] = bValDict[tag]
+    # get midpoint of bins
+    midbinsDict[tag] = [(a+b)/2.0 for a, b in zip(binsDict[tag][:len(binsDict[tag])-1], binsDict[tag][1:])]
 
-    MmaxSave[tag] = newbinsDict[tag]
-    MmaxSave[tag+'Mmax'] = MmaxValDict[tag]
+    tmpLst = []
+    for lst in bValDict[tag]:
+        tmpLst.append([j for j in lst if str(j) != 'nan'])
+        bValDict[tag] = tmpLst
+
+    tmpLst = []
+    for lst in MmaxValDict[tag]:
+        tmpLst.append([j for j in lst if str(j) != 'nan'])
+        MmaxValDict[tag] = tmpLst
 
 
 
-bValDF = pd.DataFrame.from_dict(bValSave)
-MmaxDF = pd.DataFrame.from_dict(MmaxSave)
+    # remove empty sub-lists and their corresponding bin values
+    # calculate mean, std and save them in a dictionary
+    tmpLstM = []
+    tmpLstS = []
+    tmpBin = []
+    for i, lst in enumerate(bValDict[tag]):
+        if lst:
+            tmpLstM.append(np.mean(lst))
+            tmpLstS.append(np.std(lst))
+            tmpBin.append(map(midbinsDict[tag].__getitem__, [i]))
+    bValSave[tag] = tmpBin
+    bValSave[tag+'_err'] = tmpLstS
+    bValSave[tag+'_bVal'] = tmpLstM
+
+    tmpLstM = []
+    tmpLstS = []
+    tmpBin = []
+    for i, lst in enumerate(MmaxValDict[tag]):
+        if lst:
+            tmpLstM.append(np.mean(lst))
+            tmpLstS.append(np.std(lst))
+            tmpBin.append(map(midbinsDict[tag].__getitem__, [i]))
+    MmaxSave[tag] = tmpBin
+    MmaxSave[tag+'_err'] = tmpLstS
+    MmaxSave[tag+'_Mmax'] = tmpLstM
+
+
+# -------Saving to pickle ------------------
+fbVal = open(outPath + '/bValDF.pkl', 'wb')
+fMmax = open(outPath + '/MmaxDF.pkl', 'wb')
+pickle.dump(bValSave, fbVal)
+pickle.dump(MmaxSave, fMmax)
+fbVal.close()
+fMmax.close()
+
+
 #------------------------------
 #         Plotting
 #------------------------------
@@ -175,9 +195,9 @@ for ii,qnt in enumerate(['bVal', 'Mmax']):
             ax1.set_xlabel(models[i], fontsize=24)
             ax1.set_ylabel(lbl[ii], fontsize=24)
             if qnt == 'bVal':
-                ax1.scatter(newbinsDict[tag], bValDict[tag], s=4)
+                ax1.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
             else:
-                ax1.scatter(newbinsDict[tag], MmaxValDict[tag], s=4)
+                ax1.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
             
             if tag == tags[0]:
                 ax1.set_xlim(min(combData['R']), max(combData['R']))
@@ -189,15 +209,15 @@ for ii,qnt in enumerate(['bVal', 'Mmax']):
             ax2.set_ylabel(lbl[ii], fontsize=24)
             ax2.set_xlim(Lcut2, Ucut)
             if qnt == 'bVal':
-                ax2.scatter(newbinsDict[tag], bValDict[tag], s=4)
+                ax2.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
             else:
-                ax2.scatter(newbinsDict[tag], MmaxValDict[tag], s=4)
+                ax2.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
 
     # ax1.set_ylim(0,1.5)
     # ax2.set_ylim(0,1.5)
 
-    fig1.savefig(figPath + '/' + qnt + '_1.png')
-    fig2.savefig(figPath + '/' + qnt + '_2.png')
+    fig1.savefig(figPath + '/' + str(itr) + qnt + '_1.png')
+    fig2.savefig(figPath + '/' + str(itr) + qnt + '_2.png')
 
 
 # NOTES
