@@ -1,8 +1,8 @@
-# Date: 02-04-2020
-# This script use Montecarlo sumilation to 
-# pick one slip model for each earthquake 
+# Date: 17-04-2020
+# This script use Montecarlo sumilation 
+# and bootstraping to pick random slip models 
 # and make various plots
-# Inputs: combData.pkl, srcCatalog 
+# Inputs: combData.pkl, srcCatalog
 # Outputs: various plots
 
 import numpy as np
@@ -18,19 +18,19 @@ warnings.filterwarnings("ignore")
 Stime = ti.default_timer()
 
 
+
 #PATHS
 combFile = './../3_CompAll/outputs/combData.pkl'
 srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outPath = './outputs'
-figPath = './figs'
+outPath = './outputs/MCBS'
+figPath = './figs/MCBS'
 
 #variables
 itr = 1000
 binsize = 100
+BSpram = 200
 mulFactor = 1e-6    # convert Pa to MPa
-a = 1  # scale
-b = 0   # shift
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
@@ -59,10 +59,6 @@ for tag in tags[1:]:
         combData = combData[(combData[tag] >= Lcut2) & (combData[tag] <= Ucut)]
 
 print funcFile.printProcess("Converted from Pa to Mpa at", Stime)
-
-# # filter (sigmoid filter) and scale stress values
-# combData = funcFile.filterStress(combData, a, b, tags[1:])
-# print funcFile.printProcess("Sigmoid filtered and scaled in", Stime)
 
 # define dictionary for bins
 binsDict = dict()
@@ -96,7 +92,7 @@ srcDat['srcmodId'][:] = trimmedIds
 for i in range(itr):
     print funcFile.printRun("Running iteration", i, Stime)
     # pass this data to a filter function to get on montecarlo realization
-    srcMCdat = funcFile.MCreal(srcDat)
+    srcMCdat = funcFile.MCrealBS(srcDat, BSpram)
     
     # [STEP 2]
     combMCdat = combData[combData.MainshockID.isin(list(srcMCdat['srcmodId']))]
@@ -172,8 +168,8 @@ for tag in tags:
 
 
 # -------Saving to pickle ------------------
-fbVal = open(outPath + '/bValDF.pkl', 'wb')
-fMmax = open(outPath + '/MmaxDF.pkl', 'wb')
+fbVal = open(outPath + '-' + str(BSpram) + '/bValDF.pkl', 'wb')
+fMmax = open(outPath + '-' + str(BSpram) + '/MmaxDF.pkl', 'wb')
 pickle.dump(bValSave, fbVal)
 pickle.dump(MmaxSave, fMmax)
 fbVal.close()
@@ -213,8 +209,8 @@ for ii,qnt in enumerate(['bVal', 'Mmax']):
             else:
                 ax2.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
 
-    fig1.savefig(figPath + '/' + str(itr) + qnt + '_1.png')
-    fig2.savefig(figPath + '/' + str(itr) + qnt + '_2.png')
+    fig1.savefig(figPath + '-' + str(BSpram) + '/' + str(itr) + qnt + '_1.png')
+    fig2.savefig(figPath + '-' + str(BSpram) + '/' + str(itr) + qnt + '_2.png')
 
 
 # NOTES

@@ -96,6 +96,20 @@ def MCreal(srcDat):
 
     return srcMCdat
 
+# monteCarlo function for Bootstraping
+def MCrealBS(srcDat, BSpram):
+    
+    # convert table rows to lists
+    eventRows = [list(x) for x in srcDat]
+
+    # get boot-straped rows
+    Models = random.sample(eventRows, BSpram)
+
+    # convert lists to table
+    srcMCBSdat = Table(rows=Models, names=srcDat.colnames)
+
+    return srcMCBSdat
+
 
 # calculate b-value for binned aftershocks
 def calc_b(dat, binsize, tag):
