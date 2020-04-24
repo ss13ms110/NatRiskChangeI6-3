@@ -20,13 +20,13 @@ Stime = ti.default_timer()
 
 #PATHS
 combFile = './../3_CompAll/outputs/combData.pkl'
-srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
+srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 outPath = './outputs'
 figPath = './figs'
 
 #variables
-itr = 1000
+itr = 100
 binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
 a = 1  # scale
@@ -220,3 +220,7 @@ for ii,qnt in enumerate(['bVal', 'Mmax']):
 # NOTES
 # Error bars
 # bootstraping
+# log distance plots
+# make GR map for bins
+# make inset plot for stress vs distance
+# make plots for larger binSize
