@@ -20,17 +20,15 @@ Stime = ti.default_timer()
 
 #PATHS
 combFile = './../3_CompAll/outputs/combData.pkl'
-srcCataFile = './../1_preProcess/outputs/testCata.txt'
+srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outPath = './outputs'
-figPath = './figs'
+outPath = './outputs/MCMw-mag/bin_'
+figPath = './figs/MCMw-mag'
 
 #variables
-itr = 100
+itr = 5
 binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
-a = 1  # scale
-b = 0   # shift
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
@@ -59,10 +57,6 @@ for tag in tags[1:]:
         combData = combData[(combData[tag] >= Lcut2) & (combData[tag] <= Ucut)]
 
 print funcFile.printProcess("Converted from Pa to Mpa at", Stime)
-
-# # filter (sigmoid filter) and scale stress values
-# combData = funcFile.filterStress(combData, a, b, tags[1:])
-# print funcFile.printProcess("Sigmoid filtered and scaled in", Stime)
 
 # define dictionary for bins
 binsDict = dict()
@@ -108,8 +102,7 @@ for i in range(itr):
         sortedDat = combMCdat.sort_values(by=[tag], kind='quicksort')
         
         # calculate bValue and Mmax
-        bVal, MmaxVal, avgTagVal = funcFile.calc_b(sortedDat, binsize, tag)
-        
+        bVal, MmaxVal, avgTagVal = funcFile.calc_b(sortedDat, binsize, tag, outPath)
         
         # digitize values in bins
         binTagVal = np.digitize(avgTagVal, binsDict[tag])
@@ -142,8 +135,6 @@ for tag in tags:
         tmpLst.append([j for j in lst if str(j) != 'nan'])
         MmaxValDict[tag] = tmpLst
 
-
-
     # remove empty sub-lists and their corresponding bin values
     # calculate mean, std and save them in a dictionary
     tmpLstM = []
@@ -168,12 +159,12 @@ for tag in tags:
             tmpBin.append(map(midbinsDict[tag].__getitem__, [i]))
     MmaxSave[tag] = tmpBin
     MmaxSave[tag+'_err'] = tmpLstS
-    MmaxSave[tag+'_Mmax'] = tmpLstM
+    MmaxSave[tag+'_Mw-mag'] = tmpLstM
 
 
 # -------Saving to pickle ------------------
-fbVal = open(outPath + '/bValDF.pkl', 'wb')
-fMmax = open(outPath + '/MmaxDF.pkl', 'wb')
+fbVal = open(outPath + str(binsize) + '/bValDF.pkl', 'wb')
+fMmax = open(outPath + str(binsize) + '/Mw-magDF.pkl', 'wb')
 pickle.dump(bValSave, fbVal)
 pickle.dump(MmaxSave, fMmax)
 fbVal.close()
@@ -183,38 +174,38 @@ fMmax.close()
 #------------------------------
 #         Plotting
 #------------------------------
-lbl = ['b-Value', 'M$_{max}$']
-for ii,qnt in enumerate(['bVal', 'Mmax']):
+# lbl = ['b-Value', 'M$_{max}$']
+# for ii,qnt in enumerate(['bVal', 'Mmax']):
 
-    # initialise figure
-    fig1 = plt.figure(figsize=(20,10))
-    fig2 = plt.figure(figsize=(20,10))
-    for i,tag in enumerate(tags):
-        if tag in tags[:4]:
-            ax1 = fig1.add_subplot(2, 2, i+1)
-            ax1.set_xlabel(models[i], fontsize=24)
-            ax1.set_ylabel(lbl[ii], fontsize=24)
-            if qnt == 'bVal':
-                ax1.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
-            else:
-                ax1.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
+#     # initialise figure
+#     fig1 = plt.figure(figsize=(20,10))
+#     fig2 = plt.figure(figsize=(20,10))
+#     for i,tag in enumerate(tags):
+#         if tag in tags[:4]:
+#             ax1 = fig1.add_subplot(2, 2, i+1)
+#             ax1.set_xlabel(models[i], fontsize=24)
+#             ax1.set_ylabel(lbl[ii], fontsize=24)
+#             if qnt == 'bVal':
+#                 ax1.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
+#             else:
+#                 ax1.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
             
-            if tag == tags[0]:
-                ax1.set_xlim(min(combData['R']), max(combData['R']))
-            else:
-                ax1.set_xlim(Lcut1, Ucut)
-        else:
-            ax2 = fig2.add_subplot(2, 2, i-3)
-            ax2.set_xlabel(models[i], fontsize=24)
-            ax2.set_ylabel(lbl[ii], fontsize=24)
-            ax2.set_xlim(Lcut2, Ucut)
-            if qnt == 'bVal':
-                ax2.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
-            else:
-                ax2.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
+#             if tag == tags[0]:
+#                 ax1.set_xlim(min(combData['R']), max(combData['R']))
+#             else:
+#                 ax1.set_xlim(Lcut1, Ucut)
+#         else:
+#             ax2 = fig2.add_subplot(2, 2, i-3)
+#             ax2.set_xlabel(models[i], fontsize=24)
+#             ax2.set_ylabel(lbl[ii], fontsize=24)
+#             ax2.set_xlim(Lcut2, Ucut)
+#             if qnt == 'bVal':
+#                 ax2.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
+#             else:
+#                 ax2.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
 
-    fig1.savefig(figPath + '/' + str(itr) + qnt + '_1.png')
-    fig2.savefig(figPath + '/' + str(itr) + qnt + '_2.png')
+#     fig1.savefig(figPath + '/' + str(itr) + qnt + '_1.png')
+#     fig2.savefig(figPath + '/' + str(itr) + qnt + '_2.png')
 
 
 # NOTES
