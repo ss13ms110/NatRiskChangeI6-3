@@ -144,12 +144,12 @@ def calc_b(dat, binsize, tag, outPath):
         MmaxVal.append(Mmax)
         avgTagVal.append(avgTag)
 
-        if 195 <= avgTagVal[-1] <= 205:
-            magVal.append(binnedDf['mag'])
+    #     if 195 <= avgTagVal[-1] <= 205:
+    #         magVal.append(binnedDf['mag'])
     
-    # get mag histogram and save values
-    fname = outPath + str(binsize) + '/histEdges.txt'
-    ok = MagHist(magVal, fname)
+    # # get mag histogram and save values
+    # fname = outPath + str(binsize) + '/histEdges.txt'
+    # ok = MagHist(magVal, fname)
 
     bVal = np.array(bVal)
     MmaxVal = np.array(MmaxVal)
