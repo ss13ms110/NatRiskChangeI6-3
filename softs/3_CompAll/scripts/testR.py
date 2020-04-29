@@ -62,6 +62,6 @@ combMCdat = combData[combData.MainshockID.isin(list(srcMCdat['srcmodId']))]
 
 binn = int(combMCdat.shape[0]/100)
 plt.figure()
-dfTmp = combMCdat[combMCdat['R']>0]
+dfTmp = combMCdat[combMCdat['R']>50]
 plt.hist(dfTmp['R'], bins=binn)
 plt.show()

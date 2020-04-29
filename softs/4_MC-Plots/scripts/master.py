@@ -19,15 +19,15 @@ Stime = ti.default_timer()
 
 
 #PATHS
-combFile = './../3_CompAll/outputs/combData.pkl_R-median-slip'
+combFile = './../3_CompAll/outputs/combData.pkl'
 srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outPath = './outputs/MCMw-mag/bin_'
+outPath = './outputs/tests/R/bin_'
 figPath = './figs/MCMw-mag'
 
 #variables
 itr = 1000
-binsize = 300
+binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
