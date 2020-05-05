@@ -25,12 +25,13 @@ polyDir = './../2_McCalc/outputs/polys'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/stress_values'
-CombPklFile = './outputs/combData.pkl'
+CombPklFile = './outputs/combDataAll.pkl'
 
 
 # variables
 dT = 365        # 1 year
 Hdist = 100     # km
+Vdist = 50      # km
 Dlist = np.arange(2.5,50,5)
 slipTol = 20    # in %  | DEPRECATED median slip is used instead
 
@@ -99,7 +100,7 @@ for srcRow in srcRows:
         eDate = sDate + dt.timedelta(days=dT) - dt.timedelta(seconds=1)     # sTime + time duration (e.g. 
                                                                             # 365) - 1 second to be within 
                                                                             # time duration
-        ISCdfNew, resp = funcFile.getISCcata(ISCdf, sDate, eDate, polyBuffer)
+        ISCdfNew, resp = funcFile.getISCcata(ISCdf, sDate, eDate, polyBuffer, Vdist)
 
         ASfileFlg = 0
         if resp == 1:

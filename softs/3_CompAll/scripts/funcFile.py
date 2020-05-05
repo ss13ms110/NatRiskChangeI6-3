@@ -152,7 +152,7 @@ def XY2Buffer(polyData):
     return Poly
 
 # function to get ISC catalog within time frame
-def getISCcata(ISCdf, sDate, eDate, polyBuffer):
+def getISCcata(ISCdf, sDate, eDate, polyBuffer, Vdist):
     
     #make sure UTM works
     ISCdf = ISCdf[(ISCdf.latitude < 84) & (ISCdf.latitude > -80)]
@@ -177,10 +177,13 @@ def getISCcata(ISCdf, sDate, eDate, polyBuffer):
         if polyBuffer.contains(pt):
             ISCdfNew = ISCdfNew.append(ISCdf.iloc[[i]])
 
+    # filter in depth range
+    ISCdfNew = ISCdfNew[ISCdfNew['depth'] <= Vdist]
+
     catalog = dict()
     
     # check for empty dataframe
-    if ISCdfNew.shape[0] >= 10:
+    if ISCdfNew.shape[0] >= 5:
         resp = 1
     else:
         resp = 0

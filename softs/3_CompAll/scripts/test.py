@@ -6,33 +6,49 @@ import funcFile
 figPath='./../../tmpFigs'
 
 # load poly
-polyD = np.loadtxt("./../../2_McCalc/outputs/polys/s1995KOBEJA01HORI.poly")
+polyD = np.loadtxt("./../../2_McCalc/outputs/polys/s1995KOBEJA01ZENG.poly")
 
 #load AS
-df=pd.read_pickle("./../../3_CompAll/outputs/ASpkl/s1995KOBEJA01HORI.pkl")
+df=pd.read_pickle("./../../3_CompAll/outputs/ASpkl/s1995KOBEJA01ZENG.pkl")
 
+# pram
+cR = 130
 #read srcmod
-d1, d2, d3, lat, lon, z, slip = funcFile.read_fsp_file("../../../raw_data/srcmod/srcmod_fsp_2019Mar/s1995KOBEJA01HORI.fsp")
+d1, d2, d3, lat, lon, z, slip = funcFile.read_fsp_file("../../../raw_data/srcmod/srcmod_fsp_2019Mar/s1995KOBEJA01ZENG.fsp")
 lat=np.array(lat)
 lon=np.array(lon)
 z=np.array(z)
 slip=np.array(slip)
 
 slipTol=20
-slipCut=max(slip)*(1-slipTol/100.0)
-slipCut=np.median(slip)
+# slipCut=max(slip)*(1-slipTol/100.0)
+# slipCut=np.median(slip)
+slipCut=np.min(slip)
 
 latS=lat[(slip > slipCut)]
 lonS=lon[(slip > slipCut)]
 
-latA=list(df['latitude'])
-lonA=list(df['longitude'])
-zA=list(df['depth'])
+latA=np.array(list(df['latitude']))
+lonA=np.array(list(df['longitude']))
+zA=np.array(list(df['depth']))
 
+R = []
+for i in range(len(latA)):
+    r = funcFile.dist3D(latA[i], lonA[i], zA[i], lat, lon, z)
+    R.append(min(r))
+
+R = np.array(R)
+
+latC = latA[(R>cR)]
+lonC = lonA[R>cR]
+zC = zA[R>cR]
+
+print zC
 
 plt.figure(figsize=(12,12))
 plt.scatter(polyD[:,0], polyD[:,1], label="poly")
 plt.scatter(lonA, latA, label="AS")
+plt.scatter(lonC, latC, label="ASCut")
 plt.scatter(lon, lat, label="lat-lon", marker='x')
 plt.scatter(lonS, latS, label="slip", c='black')
 plt.legend()
