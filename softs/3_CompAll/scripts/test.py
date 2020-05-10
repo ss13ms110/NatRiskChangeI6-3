@@ -6,15 +6,15 @@ import funcFile
 figPath='./../../tmpFigs'
 
 # load poly
-polyD = np.loadtxt("./../../2_McCalc/outputs/polys/s1995KOBEJA01ZENG.poly")
+polyD = np.loadtxt("./../../2_McCalc/outputs/polys/s2002DENALI01HAYE.poly")
 
 #load AS
-df=pd.read_pickle("./../../3_CompAll/outputs/ASpkl/s1995KOBEJA01ZENG.pkl")
+df=pd.read_pickle("./../../3_CompAll/outputs/ASpkl/s2002DENALI01HAYE.pkl")
 
 # pram
-cR = 130
+cR = 150
 #read srcmod
-d1, d2, d3, lat, lon, z, slip = funcFile.read_fsp_file("../../../raw_data/srcmod/srcmod_fsp_2019Mar/s1995KOBEJA01ZENG.fsp")
+d1, d2, d3, lat, lon, z, slip = funcFile.read_fsp_file("../../../raw_data/srcmod/srcmod_fsp_2019Mar/s2002DENALI01HAYE.fsp")
 lat=np.array(lat)
 lon=np.array(lon)
 z=np.array(z)

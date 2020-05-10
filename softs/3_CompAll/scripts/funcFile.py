@@ -178,7 +178,8 @@ def getISCcata(ISCdf, sDate, eDate, polyBuffer, Vdist):
             ISCdfNew = ISCdfNew.append(ISCdf.iloc[[i]])
 
     # filter in depth range
-    ISCdfNew = ISCdfNew[ISCdfNew['depth'] <= Vdist]
+    if ISCdfNew.shape[0] != 0:
+        ISCdfNew = ISCdfNew[ISCdfNew['depth'] <= Vdist]
 
     catalog = dict()
     
@@ -206,10 +207,10 @@ def CalcR(filePath, catalog, slipTol):
         zi = float(catalog['depth'][i])
 
         r = dist3D(lati, loni, zi, lat, lon, z)
-        slipCut = np.median(slip)
+        # slipCut = np.median(slip)
         # slipCut = max(slip)*(1-slipTol/100.0)
-        R.append(min(r[(slip > slipCut)]))
-        # R.append(min(r))
+        # R.append(min(r[(slip > slipCut)]))
+        R.append(min(r))
 
     return np.array(R)
 

@@ -18,10 +18,10 @@ Stime = ti.default_timer()
 
 
 #PATHS
-combFile = './../3_CompAll/outputs/combData.pkl'
-srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
+combFile = './../3_CompAll/outputs/combDataAll.pkl'
+srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outPath = './outputs/RVsStress/tests/R/bin_100'
+outPath = './outputs/RVsStress/test_wt_eq/bin_100'
 
 #variables
 itr = 1000

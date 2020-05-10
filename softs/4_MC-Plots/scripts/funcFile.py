@@ -114,23 +114,8 @@ def MCrealBS(srcDat, BSpram):
 
     return srcMCBSdat
 
-# function to calculate Mc
-def MagHist(MagList, fname):
-    magBins = np.arange(0, 10.1, 0.2)
-
-    hist, edges = np.histogram(MagList, magBins)
-    print MagList
-
-    midPoint = (edges[1:] + edges[:-1])/2
-
-    fid = open(fname, 'w')
-    for i in range(len(hist)):
-        fid.write('%d   %f\n' %(hist[i], midPoint[i]))
-    
-    return "OK"
-
 # calculate b-value for binned aftershocks
-def calc_b(dat, binsize, tag, outPath):
+def calc_b(dat, binsize, tag, GRdist):
     
     bVal = []
     MmaxVal = []
@@ -144,17 +129,14 @@ def calc_b(dat, binsize, tag, outPath):
         MmaxVal.append(Mmax)
         avgTagVal.append(avgTag)
 
-    #     if 195 <= avgTagVal[-1] <= 205:
-    #         magVal.append(binnedDf['mag'])
+        if GRdist-2 <= avgTagVal[-1] <= GRdist+2:
+            # print avgTagVal[-1], len(binnedDf['mag']) 
+            magVal.append(list(binnedDf['mag']))
     
-    # # get mag histogram and save values
-    # fname = outPath + str(binsize) + '/histEdges.txt'
-    # ok = MagHist(magVal, fname)
-
     bVal = np.array(bVal)
     MmaxVal = np.array(MmaxVal)
     avgTagVal = np.array(avgTagVal)
-    return bVal, MmaxVal, avgTagVal
+    return bVal, MmaxVal, avgTagVal, magVal
 
 def calcRVsTag(dat, binsize, tag):
     avgR = []

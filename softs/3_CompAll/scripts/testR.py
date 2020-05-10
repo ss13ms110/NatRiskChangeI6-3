@@ -5,7 +5,7 @@ from astropy.io import ascii
 import random
 from astropy.table import Table
 
-dfpath = './outputs/combData.pkl'
+dfpath = './outputs/combDataAll.pkl'
 srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
 mcVal = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 
@@ -62,6 +62,6 @@ combMCdat = combData[combData.MainshockID.isin(list(srcMCdat['srcmodId']))]
 
 binn = int(combMCdat.shape[0]/100)
 plt.figure()
-dfTmp = combMCdat[combMCdat['R']>50]
+dfTmp = combMCdat[combMCdat['R']>125]
 plt.hist(dfTmp['R'], bins=binn)
 plt.show()

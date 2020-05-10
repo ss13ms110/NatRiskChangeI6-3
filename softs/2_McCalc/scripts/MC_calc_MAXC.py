@@ -28,7 +28,7 @@ class bcol:
 polyResp = raw_input(bcol.BOLD + "Polygon from saved or generate NEW [S/N]: " + bcol.ENDC)
 
 # Path
-srcmodPath = '/home/sharma/Work/Project/git/NatRiskChangeI6-3/raw_data/srcmod/srcmod_fsp_2019Mar'
+srcmodPath = '/home/shubham/Work/NatRisk/NatRiskChangeI6-3/raw_data/srcmod/srcmod_fsp_2019Mar'
 srcmodCata = './../1_preProcess/outputs/srcmodCata.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 polyDir = 'outputs/polys'

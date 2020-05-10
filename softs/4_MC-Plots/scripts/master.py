@@ -8,6 +8,7 @@
 import numpy as np
 import pandas as pd
 import funcFile
+from itertools import chain
 from astropy.io import ascii
 import matplotlib.pyplot as plt
 import pickle
@@ -19,20 +20,21 @@ Stime = ti.default_timer()
 
 
 #PATHS
-combFile = './../3_CompAll/outputs/combData.pkl'
-srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
-McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outPath = './outputs/tests/R/bin_'
+combFile = './../3_CompAll/outputs/combDataAll.pkl'
+srcCataFile = './../1_preProcess/outputs/testCata.txt'
+McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txtCOPY'
+outPath = './outputs/MC/testMag/bin_'
 figPath = './figs/MCMw-mag'
 
 #variables
-itr = 1000
+itr = 10
 binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
 binLen = 500
+GRdist = 100
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
 
@@ -87,6 +89,7 @@ trimmedIds = [x['srcmodId'][:17] for x in srcDat]
 srcDat['srcmodId'][:] = trimmedIds
 
 # run montecarlo loop
+magValList = []
 for i in range(itr):
     print funcFile.printRun("Running iteration", i, Stime)
     # pass this data to a filter function to get on montecarlo realization
@@ -102,7 +105,11 @@ for i in range(itr):
         sortedDat = combMCdat.sort_values(by=[tag], kind='quicksort')
         
         # calculate bValue and Mmax
-        bVal, MmaxVal, avgTagVal = funcFile.calc_b(sortedDat, binsize, tag, outPath)
+        bVal, MmaxVal, avgTagVal, magVal = funcFile.calc_b(sortedDat, binsize, tag, GRdist)
+
+        if magVal:
+            magValList.append(magVal)
+            # print len(list(chain(*magVal)))
         
         # digitize values in bins
         binTagVal = np.digitize(avgTagVal, binsDict[tag])
@@ -116,6 +123,16 @@ for i in range(itr):
         MmaxValDict[tag] = [ lst + [avgMmax[j]] for j,lst in enumerate(MmaxValDict[tag])]
 
 
+#---------Mag Histogram-------
+magBins = np.arange(0,10.1,0.1)
+magValList = list(chain(*list(chain(*magValList))))
+magHist, magEdges = np.histogram(magValList, magBins)
+# save hist and edges to dict and then to pkl
+magDict = dict({'magHist': magHist, 'midMag': [(magEdges[1:] + magEdges[:-1])/2]})
+fMmag = open(outPath + str(binsize) + '/GRDF.pkl', 'wb')
+pickle.dump(magDict, fMmag)
+fMmag.close()
+#-----------------------------
 
 # remove NaNs from the lists
 bValSave = dict()
