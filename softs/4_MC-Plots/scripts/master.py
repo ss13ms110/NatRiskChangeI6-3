@@ -23,18 +23,18 @@ Stime = ti.default_timer()
 combFile = './../3_CompAll/outputs/combDataAll.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txtCOPY'
-outPath = './outputs/MC/testMag/bin_'
+outPath = './outputs/MC/All/bin_'
 figPath = './figs/MCMw-mag'
 
 #variables
-itr = 10
-binsize = 100
+itr = 1000
+binsize = 200
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
 binLen = 500
-GRdist = 100
+GRdist = 50
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
 
@@ -129,7 +129,7 @@ magValList = list(chain(*list(chain(*magValList))))
 magHist, magEdges = np.histogram(magValList, magBins)
 # save hist and edges to dict and then to pkl
 magDict = dict({'magHist': magHist, 'midMag': [(magEdges[1:] + magEdges[:-1])/2]})
-fMmag = open(outPath + str(binsize) + '/GRDF.pkl', 'wb')
+fMmag = open(outPath + str(binsize) + '/GRDF_' + str(GRdist) + '.pkl', 'wb')
 pickle.dump(magDict, fMmag)
 fMmag.close()
 #-----------------------------
@@ -232,3 +232,5 @@ fMmax.close()
 # make GR map for bins
 # make inset plot for stress vs distance
 # make plots for larger binSize
+# calculate difference to Mc vs # of events
+# verify bath's law

@@ -6,9 +6,9 @@ from itertools import chain
 
 
 # PATH
-outPath = './outputs/MC/testMag/bin_100'
-figPath = './figs/MC/testMag/bin_100'
-RSPath = './outputs/RVsStress/test_wt_eq/bin_100/RVsStressDF.pkl'
+outPath = './outputs/MC/All/bin_200'
+figPath = './figs/MC/All/bin_200'
+RSPath = './outputs/RVsStress/All/bin_200/RVsStressDF.pkl'
 
 # PRAMS
 fileN = ['bValDF.pkl', 'Mw-magDF.pkl']
@@ -69,10 +69,11 @@ for ii,fl in enumerate(fileN):
     fig2.savefig(figPath + '/' + fl.split('.')[0] + '_2.png')
 
 # GR plot
-GRfile = outPath + '/GRDF.pkl'
+# GRfile = outPath + '/GRDF.pkl'
 
-GRdf = pd.read_pickle(GRfile)
-plt.figure()
-plt.scatter(GRdf['midMag'], GRdf['magHist'])
-plt.yscale('log')
-plt.show()
+# GRdf = pd.read_pickle(GRfile)
+# print GRdf
+# plt.figure()
+# plt.scatter(GRdf['midMag'], GRdf['magHist'])
+# plt.yscale('log')
+# plt.show()

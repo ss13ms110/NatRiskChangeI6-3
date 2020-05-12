@@ -21,11 +21,11 @@ Stime = ti.default_timer()
 combFile = './../3_CompAll/outputs/combDataAll.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outPath = './outputs/RVsStress/test_wt_eq/bin_100'
+outPath = './outputs/RVsStress/All/bin_200'
 
 #variables
 itr = 1000
-binsize = 100
+binsize = 200
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
