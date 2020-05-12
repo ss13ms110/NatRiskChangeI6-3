@@ -131,7 +131,7 @@ def calc_b(dat, binsize, tag, GRdist):
 
         if GRdist-2 <= avgTagVal[-1] <= GRdist+2:
             # print avgTagVal[-1], len(binnedDf['mag']) 
-            magVal.append(list(binnedDf['mag']))
+            magVal.append(list(binnedDf['mag'] - binnedDf['Mc(t)']))
     
     bVal = np.array(bVal)
     MmaxVal = np.array(MmaxVal)

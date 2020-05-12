@@ -18,23 +18,23 @@ warnings.filterwarnings("ignore")
 
 Stime = ti.default_timer()
 
-
+GRdist = int(raw_input("GRDist: "))
 #PATHS
 combFile = './../3_CompAll/outputs/combDataAll.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txtCOPY'
-outPath = './outputs/MC/All/bin_'
+outPath = './outputs/MC/GRTesting/mag-Mct/bin_'
 figPath = './figs/MCMw-mag'
 
 #variables
-itr = 1000
-binsize = 200
+itr = 100
+binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
 binLen = 500
-GRdist = 50
+# GRdist = 10
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
 
