@@ -6,9 +6,9 @@ from itertools import chain
 
 
 # PATH
-outPath = './outputs/MC/All/bin_200'
-figPath = './figs/MC/All/bin_200'
-RSPath = './outputs/RVsStress/All/bin_200/RVsStressDF.pkl'
+outPath = './outputs/MC/GRTesting/mag-Mct/bin_100'
+figPath = './figs/MC/GRTesting/mag-Mct/bin_100'
+RSPath = './outputs/RVsStress/GRTesting/bin_100/RVsStressDF.pkl'
 
 # PRAMS
 fileN = ['bValDF.pkl', 'Mw-magDF.pkl']
