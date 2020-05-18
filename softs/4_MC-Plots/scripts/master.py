@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 
 Stime = ti.default_timer()
 
-GRdist = int(raw_input("GRDist: "))
+# GRdist = int(raw_input("GRDist: "))
 #PATHS
 combFile = './../3_CompAll/outputs/combDataAll.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
@@ -27,14 +27,14 @@ outPath = './outputs/MC/GRTesting/mag-Mct/bin_'
 figPath = './figs/MCMw-mag'
 
 #variables
-itr = 100
+itr = 1000
 binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
 binLen = 500
-# GRdist = 10
+GRdist = 10
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
 
@@ -124,14 +124,14 @@ for i in range(itr):
 
 
 #---------Mag Histogram-------
-magBins = np.arange(0,10.1,0.1)
-magValList = list(chain(*list(chain(*magValList))))
-magHist, magEdges = np.histogram(magValList, magBins)
-# save hist and edges to dict and then to pkl
-magDict = dict({'magHist': magHist, 'midMag': [(magEdges[1:] + magEdges[:-1])/2]})
-fMmag = open(outPath + str(binsize) + '/GRDF_' + str(GRdist) + '.pkl', 'wb')
-pickle.dump(magDict, fMmag)
-fMmag.close()
+# magBins = np.arange(0,10.1,0.1)
+# magValList = list(chain(*list(chain(*magValList))))
+# magHist, magEdges = np.histogram(magValList, magBins)
+# # save hist and edges to dict and then to pkl
+# magDict = dict({'magHist': magHist, 'midMag': [(magEdges[1:] + magEdges[:-1])/2]})
+# fMmag = open(outPath + str(binsize) + '/GRDF_' + str(GRdist) + '.pkl', 'wb')
+# pickle.dump(magDict, fMmag)
+# fMmag.close()
 #-----------------------------
 
 # remove NaNs from the lists
