@@ -23,12 +23,12 @@ Stime = ti.default_timer()
 combFile = './../3_CompAll/outputs/combDataAll.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txtCOPY'
-outPath = './outputs/MC/GRTesting/mag-Mct/bin_'
+outPath = './outputs/MC/All/bin_'
 figPath = './figs/MCMw-mag'
 
 #variables
 itr = 1000
-binsize = 100
+binsize = 500
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
@@ -234,3 +234,6 @@ fMmax.close()
 # make plots for larger binSize
 # calculate difference to Mc vs # of events
 # verify bath's law
+# how many events in each stress bin
+# correction for Mc and Mct
+# equidistant bins

@@ -7,8 +7,8 @@ from math import ceil, log10
 
 
 # path
-GRPath = './outputs/MC/GRTesting/mag-Mct/bin_100'
-GRfig = './figs/MC/GRTesting/mag-Mct/bin_100'
+GRPath = './outputs/MC/GRTesting/mag-Mct/bin_500'
+GRfig = './figs/MC/GRTesting/mag-Mct/bin_500'
 
 # prams
 Rtol = 2
