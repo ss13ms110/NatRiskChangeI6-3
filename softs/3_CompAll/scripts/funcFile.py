@@ -215,15 +215,15 @@ def CalcR(filePath, catalog, slipTol):
     return np.array(R)
 
 # calculate Mc(t)
-def CalcMct(Mw, MSdatetime, AStime):
+def CalcMct(Mw, MSdatetime, AStime, Mc):
     
     ASdaysTmp = getDays(MSdatetime, AStime)
 
     ASdays = [0.01 if x == 0.0 else x for x in ASdaysTmp]
 
-    tmpMct = Mw - 4.5 - 0.75*np.log10(ASdays)
+    Mctmp = Mw - 4.5 - 0.75*np.log10(ASdays)
 
-    Mct = [2.0 if x < 2.0 else x for x in tmpMct]
+    Mct = [Mc if m < Mc else m for m in Mctmp]
 
     return Mct
 

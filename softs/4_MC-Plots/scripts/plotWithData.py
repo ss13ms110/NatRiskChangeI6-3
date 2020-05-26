@@ -6,9 +6,9 @@ from itertools import chain
 
 
 # PATH
-outPath = './outputs/MC/All/bin_500'
-figPath = './figs/MC/All/bin_500'
-RSPath = './outputs/RVsStress/GRTesting/bin_500/RVsStressDF.pkl'
+outPath = './outputs/MC/binNumTesting/itr_100/bin_200'
+figPath = './figs/MC/binNumTesting/itr_100/bin_200'
+RSPath = './outputs/RVsStress/All/bin_100/RVsStressDF.pkl'
 
 # PRAMS
 fileN = ['bValDF.pkl', 'Mw-magDF.pkl']
@@ -45,9 +45,12 @@ for ii,fl in enumerate(fileN):
             
             if tag == tags[0]:
                 ax1.set_xlim(min(list(chain(*df[tag]))), max(list(chain(*df[tag]))))
+                # ax1.set_ylim(0,2)
                 # ax1.set_xscale('log')
             else:
                 ax1.set_xlim(Lcut1, Ucut)
+                # if ii == 0:
+                    # ax1.set_ylim(-0.1, 1.5)
                 ax1a = fig1.add_axes([xmin[i%4]+0.26, ymin[i%4]+0.25, dx/3, dy/3])
                 ax1a.scatter(RSdf[tag+'_R'], RSdf[tag], c='black', s=2)
                 ax1a.set_xlabel(models[0], fontweight='bold')
@@ -58,6 +61,8 @@ for ii,fl in enumerate(fileN):
             ax2.set_xlabel(models[i], fontsize=24)
             ax2.set_ylabel(lbl[ii], fontsize=24)
             ax2.set_xlim(Lcut2, Ucut)
+            if ii == 0:
+                ax2.set_ylim(-0.1, 1.5)
             ax2.errorbar(list(chain(*df[tag])), df[tag+val[ii]], yerr=df[tag+'_err'], marker='.', ms='10', linestyle="None")
             
             ax2a.scatter(RSdf[tag+'_R'], RSdf[tag], c='black', s=2)

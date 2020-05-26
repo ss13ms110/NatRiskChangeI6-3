@@ -7,8 +7,8 @@ from math import ceil, log10
 
 
 # path
-GRPath = './outputs/MC/GRTesting/mag-Mct/bin_500'
-GRfig = './figs/MC/GRTesting/mag-Mct/bin_500'
+GRPath = './outputs/MC/binNumTesting/itr_100/bin_200'
+GRfig = './figs/MC/binNumTesting/itr_100/bin_200'
 
 # prams
 Rtol = 2
@@ -21,7 +21,7 @@ bDf['R_bVal'] = bDic['R_bVal']
 
 fig = plt.figure(figsize=(15,10))
 j = 1
-for i in range(10, 131, 20):
+for i in range(10, 111, 20):
     GRfile = GRPath + '/GRDF_' + str(i) + '.pkl'
 
     # get R_bVal for given R (i)
@@ -55,5 +55,5 @@ for i in range(10, 131, 20):
     j += 1
 
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
-fig.suptitle("GR plots for 100 binsize")
+fig.suptitle("GR plots for 200 binsize")
 plt.savefig(GRfig + '/GRplot.png')

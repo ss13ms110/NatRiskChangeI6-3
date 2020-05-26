@@ -18,23 +18,23 @@ warnings.filterwarnings("ignore")
 
 Stime = ti.default_timer()
 
-# GRdist = int(raw_input("GRDist: "))
+GRdist = int(raw_input("GRDist: "))
+# binsize = int(raw_input("binsize"))
 #PATHS
-combFile = './../3_CompAll/outputs/combDataAll.pkl'
+combFile = './../3_CompAll/outputs/combData.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txtCOPY'
-outPath = './outputs/MC/All/bin_'
-figPath = './figs/MCMw-mag'
+outPath = './outputs/MC/GRTesting/mag-Mct/bin_'
 
 #variables
-itr = 1000
-binsize = 500
+itr = 100
+binsize = 100
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
 binLen = 500
-GRdist = 10
+# GRdist = 10
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
 
@@ -46,7 +46,7 @@ models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (
 combDataload = pd.read_pickle(combFile)
 print funcFile.printLoad("Combined data loaded at", Stime)
 
-# filter aftershocks above the Mc values [STEP 1]
+# filter aftershocks above the Mc and Mct values [STEP 1]
 combData = funcFile.filterMc(combDataload, McValueFile)
 print funcFile.printProcess("Mc filter applied at", Stime)
 
@@ -124,14 +124,14 @@ for i in range(itr):
 
 
 #---------Mag Histogram-------
-# magBins = np.arange(0,10.1,0.1)
-# magValList = list(chain(*list(chain(*magValList))))
-# magHist, magEdges = np.histogram(magValList, magBins)
-# # save hist and edges to dict and then to pkl
-# magDict = dict({'magHist': magHist, 'midMag': [(magEdges[1:] + magEdges[:-1])/2]})
-# fMmag = open(outPath + str(binsize) + '/GRDF_' + str(GRdist) + '.pkl', 'wb')
-# pickle.dump(magDict, fMmag)
-# fMmag.close()
+magBins = np.arange(0,10.1,0.1)
+magValList = list(chain(*list(chain(*magValList))))
+magHist, magEdges = np.histogram(magValList, magBins)
+# save hist and edges to dict and then to pkl
+magDict = dict({'magHist': magHist, 'midMag': [(magEdges[1:] + magEdges[:-1])/2]})
+fMmag = open(outPath + str(binsize) + '/GRDF_' + str(GRdist) + '.pkl', 'wb')
+pickle.dump(magDict, fMmag)
+fMmag.close()
 #-----------------------------
 
 # remove NaNs from the lists
@@ -186,44 +186,6 @@ pickle.dump(bValSave, fbVal)
 pickle.dump(MmaxSave, fMmax)
 fbVal.close()
 fMmax.close()
-
-
-#------------------------------
-#         Plotting
-#------------------------------
-# lbl = ['b-Value', 'M$_{max}$']
-# for ii,qnt in enumerate(['bVal', 'Mmax']):
-
-#     # initialise figure
-#     fig1 = plt.figure(figsize=(20,10))
-#     fig2 = plt.figure(figsize=(20,10))
-#     for i,tag in enumerate(tags):
-#         if tag in tags[:4]:
-#             ax1 = fig1.add_subplot(2, 2, i+1)
-#             ax1.set_xlabel(models[i], fontsize=24)
-#             ax1.set_ylabel(lbl[ii], fontsize=24)
-#             if qnt == 'bVal':
-#                 ax1.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
-#             else:
-#                 ax1.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
-            
-#             if tag == tags[0]:
-#                 ax1.set_xlim(min(combData['R']), max(combData['R']))
-#             else:
-#                 ax1.set_xlim(Lcut1, Ucut)
-#         else:
-#             ax2 = fig2.add_subplot(2, 2, i-3)
-#             ax2.set_xlabel(models[i], fontsize=24)
-#             ax2.set_ylabel(lbl[ii], fontsize=24)
-#             ax2.set_xlim(Lcut2, Ucut)
-#             if qnt == 'bVal':
-#                 ax2.errorbar(bValSave[tag], bValSave[tag+'_bVal'], yerr=bValSave[tag+'_err'], marker='.', ms='10', linestyle="None")
-#             else:
-#                 ax2.errorbar(MmaxSave[tag], MmaxSave[tag+'_Mmax'], yerr=MmaxSave[tag+'_err'], marker='.', ms='10', linestyle="None")
-
-#     fig1.savefig(figPath + '/' + str(itr) + qnt + '_1.png')
-#     fig2.savefig(figPath + '/' + str(itr) + qnt + '_2.png')
-
 
 # NOTES
 # Error bars

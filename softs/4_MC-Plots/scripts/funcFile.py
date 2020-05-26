@@ -44,14 +44,11 @@ def filterMc(combDataload, McValueFile):
     for line in fid:
         srcName = line.split()[0]
         Mc = float(line.split()[1])
-        Mct = float(line.split()[2])
-
-        if Mc < Mct:
-            Mc = Mct
 
         combDataTmp = combDataload[combDataload.MainshockID.isin([srcName])]
         
         combDataTmp = combDataTmp[combDataTmp['mag'] >= Mc]
+        combDataTmp = combDataTmp[combDataTmp['mag'] >= combDataTmp['Mc(t)']]
         combData = combData.append(combDataTmp)
     
     return combData
@@ -67,7 +64,7 @@ def filterStress(df, a, b, tags):
 
 # calculate b value using Aki estimator
 def bVal_Mmax_avgTag(dat, tag):
-    magAvg = np.mean(abs(dat['mag'] - dat['Mc(t)']))
+    magAvg = np.mean(dat['mag'] - dat['Mc(t)'])
     b = 1/(np.log(10)*magAvg)
 
     Mmax = np.mean(dat['Mw-mag'])
@@ -123,6 +120,35 @@ def calc_b(dat, binsize, tag, GRdist):
     magVal = []
     for i in range(0, dat.shape[0], binsize):
         binnedDf = dat.iloc[i:i+binsize]
+
+        b, Mmax, avgTag = bVal_Mmax_avgTag(binnedDf, tag)
+        bVal.append(b)
+        MmaxVal.append(Mmax)
+        avgTagVal.append(avgTag)
+
+        if GRdist-2 <= avgTagVal[-1] <= GRdist+2:
+            # print avgTagVal[-1], len(binnedDf['mag']) 
+            magVal.append(list(binnedDf['mag'] - binnedDf['Mc(t)']))
+    
+    bVal = np.array(bVal)
+    MmaxVal = np.array(MmaxVal)
+    avgTagVal = np.array(avgTagVal)
+    return bVal, MmaxVal, avgTagVal, magVal
+
+# calculate b-value for equidistant bins
+def calc_bEqui(dat, binNum, tag, GRdist):
+
+    bVal = []
+    MmaxVal = []
+    avgTagVal = []
+    magVal = []
+
+    minTag, maxTag = min(dat[tag]), max(dat[tag])+0.1
+
+    TagArray = np.linspace(minTag, maxTag, binNum)
+
+    for i in zip(TagArray[:-1], TagArray[1:]):
+        binnedDf = dat[(dat[tag] >= i[0]) & (dat[tag] < i[1])]
 
         b, Mmax, avgTag = bVal_Mmax_avgTag(binnedDf, tag)
         bVal.append(b)

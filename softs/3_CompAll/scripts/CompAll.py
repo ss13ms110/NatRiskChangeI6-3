@@ -21,11 +21,12 @@ ASResp = raw_input(funcFile.bcol.BOLD + "Read AS data from saved [Y] or from ISC
 # Paths
 srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
 srcmodPath = './../../raw_data/srcmod/srcmod_fsp_2019Mar'
+McFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 polyDir = './../2_McCalc/outputs/polys'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/stress_values'
-CombPklFile = './outputs/combDataAll.pkl'
+CombPklFile = './outputs/combData.pkl'
 
 
 # variables
@@ -55,6 +56,9 @@ dfColumns = ['time', 'MainshockID', 'latitude', 'longitude', 'depth', 'mag', 'R'
 # create an empty dataframe to hold all the combined data
 CombDf = pd.DataFrame([], columns=dfColumns)
 
+# load Mc data
+Mcdat = np.genfromtxt(McFile, dtype='str')
+
 for srcRow in srcRows:
     Yr = int(srcRow.split()[0])
     Mn = int(srcRow.split()[2])
@@ -67,7 +71,11 @@ for srcRow in srcRows:
     Dp = float(srcRow.split()[9])
     Mw = float(srcRow.split()[10])
     srcFname = srcRow.split()[12]
-
+    
+    try:
+        Mc = float([Mcrow[1] for Mcrow in Mcdat if Mcrow[0] == srcFname.split('.')[0]][0])
+    except:
+        Mc = 0
     # get all aftershocks related to this mainshock 
     # for next 1 year in a region of 100x100x50
 
@@ -149,7 +157,7 @@ for srcRow in srcRows:
     #                    from Helmstetter et.al. 2006
     # -----------------------------------------------------------------------
         MSdatetime = dt.datetime(Yr, Mn, Dy, Hr, Mi, int(Se))
-        Mct = funcFile.CalcMct(Mw, MSdatetime, catalog['time'])
+        Mct = funcFile.CalcMct(Mw, MSdatetime, catalog['time'], Mc)
 
     # -----------------------------------------------------------------------
     #              accumulate all stress data in one dataframe
