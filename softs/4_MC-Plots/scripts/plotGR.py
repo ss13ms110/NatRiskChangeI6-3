@@ -4,14 +4,20 @@ import matplotlib.pyplot as plt
 from itertools import chain
 from math import ceil, log10
 
-
-
 # path
-GRPath = './outputs/MC/binNumTesting/itr_100/bin_200'
-GRfig = './figs/MC/binNumTesting/itr_100/bin_200'
+GRP = './outputs/MC/GRTesting/mag-Mct'
+GRf = './figs/MC/GRTesting/mag-Mct'
+
+itr = int(raw_input("No. of iteration: "))
+binsize = int(raw_input("Bin size/Num: "))
 
 # prams
 Rtol = 2
+
+# path asign here
+GRPath = GRP + '/itr_' + str(itr) + '/bin_' + str(binsize)
+GRfig = GRf + '/itr_' + str(itr) + '/bin_' + str(binsize)
+
 # Mains
 # load ValDF
 bDic = pd.read_pickle(GRPath + '/bValDF.pkl')
@@ -21,7 +27,7 @@ bDf['R_bVal'] = bDic['R_bVal']
 
 fig = plt.figure(figsize=(15,10))
 j = 1
-for i in range(10, 111, 20):
+for i in range(10, 131, 20):
     GRfile = GRPath + '/GRDF_' + str(i) + '.pkl'
 
     # get R_bVal for given R (i)
@@ -55,5 +61,5 @@ for i in range(10, 111, 20):
     j += 1
 
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
-fig.suptitle("GR plots for 200 binsize")
+fig.suptitle("GR plots for iteration %d and binsize %d" %(itr, binsize))
 plt.savefig(GRfig + '/GRplot.png')

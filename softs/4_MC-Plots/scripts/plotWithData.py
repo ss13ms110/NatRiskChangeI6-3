@@ -6,9 +6,12 @@ from itertools import chain
 
 
 # PATH
-outPath = './outputs/MC/binNumTesting/itr_100/bin_200'
-figPath = './figs/MC/binNumTesting/itr_100/bin_200'
-RSPath = './outputs/RVsStress/All/bin_100/RVsStressDF.pkl'
+outP = './outputs/MC/GRTesting/mag-Mct'
+figP = './figs/MC/GRTesting/mag-Mct'
+RSP = './outputs/RVsStress/bin_500'
+
+itr = int(raw_input("No. of iteration: "))
+binsize = int(raw_input("Bin size/Num: "))
 
 # PRAMS
 fileN = ['bValDF.pkl', 'Mw-magDF.pkl']
@@ -19,6 +22,11 @@ Lcut2 = 0
 Ucut = 5
 binLen = 500
 # MAIN
+
+# paths make here
+outPath = outP + '/itr_' + str(itr) + '/bin_' + str(binsize)
+figPath = figP + '/itr_' + str(itr) + '/bin_' + str(binsize)
+RSPath = RSP + '/RVsStressDF.pkl'
 
 # read pickle file
 RSdf = pd.read_pickle(RSPath)

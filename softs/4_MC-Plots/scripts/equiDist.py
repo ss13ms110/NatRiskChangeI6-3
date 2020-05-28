@@ -24,11 +24,11 @@ GRdist = int(raw_input("GRDist: "))
 combFile = './../3_CompAll/outputs/combData.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txtCOPY'
-outPath = './outputs/MC/binNumTesting/itr_100/bin_'
+outP = './outputs/MC/binNumTesting'
 
 #variables
-itr = 100
-binNum = 200    # this means binsize ~ 100 (~80000 in sortedCata)
+itr = 500
+binNum = 800    # this means binsize ~ 100 (~80000 in sortedCata)
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
@@ -37,6 +37,9 @@ binLen = 500
 # GRdist = 10
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
+
+# outpath set here
+outPath = outP + '/itr_' + str(itr) + '/bin_' + str(binNum)
 
 #--------------------------------------
 #                 MAIN
@@ -129,7 +132,7 @@ magValList = list(chain(*list(chain(*magValList))))
 magHist, magEdges = np.histogram(magValList, magBins)
 # save hist and edges to dict and then to pkl
 magDict = dict({'magHist': magHist, 'midMag': [(magEdges[1:] + magEdges[:-1])/2]})
-fMmag = open(outPath + str(binNum) + '/GRDF_' + str(GRdist) + '.pkl', 'wb')
+fMmag = open(outPath + '/GRDF_' + str(GRdist) + '.pkl', 'wb')
 pickle.dump(magDict, fMmag)
 fMmag.close()
 #-----------------------------
@@ -180,8 +183,8 @@ for tag in tags:
 
 
 # -------Saving to pickle ------------------
-fbVal = open(outPath + str(binNum) + '/bValDF.pkl', 'wb')
-fMmax = open(outPath + str(binNum) + '/Mw-magDF.pkl', 'wb')
+fbVal = open(outPath + '/bValDF.pkl', 'wb')
+fMmax = open(outPath + '/Mw-magDF.pkl', 'wb')
 pickle.dump(bValSave, fbVal)
 pickle.dump(MmaxSave, fMmax)
 fbVal.close()

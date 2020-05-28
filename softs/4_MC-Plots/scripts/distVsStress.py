@@ -18,13 +18,13 @@ Stime = ti.default_timer()
 
 
 #PATHS
-combFile = './../3_CompAll/outputs/combDataAll.pkl'
+combFile = './../3_CompAll/outputs/combData.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outPath = './outputs/RVsStress/All/bin_500'
+outPath = './outputs/RVsStress/bin_'
 
 #variables
-itr = 1000
+itr = 500
 binsize = 500
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
@@ -133,6 +133,6 @@ for tag in tags:
 
 
 # -------Saving to pickle ------------------
-fid = open(outPath + '/RVsStressDF.pkl', 'wb')
+fid = open(outPath + str(binsize) + '/RVsStressDF.pkl', 'wb')
 pickle.dump(binTagValSave, fid)
 fid.close()
