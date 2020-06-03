@@ -49,3 +49,5 @@ how many events in each stress bin
 correction for Mc and Mct  
 equidistant bins  
 
+Make different plots for b-Value Vs Stress  
+
