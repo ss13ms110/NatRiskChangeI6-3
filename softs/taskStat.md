@@ -31,9 +31,9 @@
 | Sr.  	| Test  	| Itr  	| Dir  	            | Status  	| Figure    |
 |---	|---	    |---	|---	            |---	    |---        |
 | 1  	| lenTest  	| 500   | itr_500/bin_100  	| Done      | Done      |
-| 2  	| lenTest  	| ''    | itr_500/bin_500  	| Done  	|           |
-| 3  	| lenTest  	| 1000  | itr_1000/bin_100 	| Running   |           |
-| 4  	| lenTest  	| ''    | itr_1000/bin_500 	| Running   |           |
+| 2  	| lenTest  	| ''    | itr_500/bin_500  	| Done  	| Done      |
+| 3  	| lenTest  	| 1000  | itr_1000/bin_100 	| DOne      | Done      |
+| 4  	| lenTest  	| ''    | itr_1000/bin_500 	| Done      | DOne      |
 |_______|___________|_______|___________________|___________|___________|
 
 # Notes  

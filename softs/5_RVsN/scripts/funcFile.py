@@ -73,6 +73,21 @@ def bVal_Mmax_avgTag(dat, tag):
 
     return b, Mmax, avgTag
 
+# calculate b value and ERROR using Aki estimator
+def bVal_Mmag_avgTag(dat, tag):
+    magAvg = np.mean(dat['mag'] - dat['Mc(t)'])
+    n = len(dat['mag'] - dat['Mc(t)'])
+    b = 1/(np.log(10)*magAvg)
+
+    bErr = b/np.sqrt(n)
+
+    Mmag = np.mean(dat['Mw-mag'])
+    MmagStd = np.std(dat['Mw-mag'])
+
+    avgTag = np.mean(dat[tag])
+
+    return b, bErr, Mmag, MmagStd, avgTag
+
 
 # monteCarlo function
 def MCreal(srcDat):
@@ -130,6 +145,65 @@ def calc_b(dat, binsize, tag):
     MmaxVal = np.array(MmaxVal)
     avgTagVal = np.array(avgTagVal)
     return bVal, MmaxVal, avgTagVal
+
+# calculate b-value and ERROR for binned aftershocks
+def calc_bErr(dat, binsize, tag):
+    
+    bVal = []
+    bValErr = []
+    MmagVal = []
+    MmagValStd = []
+    avgTagVal = []
+    for i in range(0, dat.shape[0], binsize):
+        binnedDf = dat.iloc[i:i+binsize]
+
+        b, bErr, Mmag, MmagStd, avgTag = bVal_Mmag_avgTag(binnedDf, tag)
+        bVal.append(b)
+        bValErr.append(bErr)
+        MmagVal.append(Mmag)
+        MmagValStd.append(MmagStd)
+        avgTagVal.append(avgTag)
+
+    
+    bVal = np.array(bVal)
+    bValErr = np.array(bValErr)
+    MmagVal = np.array(MmagVal)
+    MmagValStd = np.array(MmagValStd)
+    avgTagVal = np.array(avgTagVal)
+    return bVal, bValErr, MmagVal, MmagValStd, avgTagVal
+
+# calculate b-value CUMULATIVE for binned aftershocks
+def calc_bCumm(dat, binsize, tag):
+    
+    bVal = []
+    bValErr = []
+    MmagVal = []
+    MmagValStd = []
+    avgTagVal = []
+
+    tgMin, tgMax = min(dat[tag]), max(dat[tag])
+
+    tagRange = np.linspace(tgMin, tgMax, binsize)
+
+    for i in tagRange[:-1]:
+
+        binnedDf = dat[(dat[tag] >= i)]
+
+        b, bErr, Mmag, MmagStd, avgTag = bVal_Mmag_avgTag(binnedDf, tag)
+        bVal.append(b)
+        bValErr.append(bErr)
+        MmagVal.append(Mmag)
+        MmagValStd.append(MmagStd)
+        avgTagVal.append(avgTag)
+
+    
+    bVal = np.array(bVal)
+    bValErr = np.array(bValErr)
+    MmagVal = np.array(MmagVal)
+    MmagValStd = np.array(MmagValStd)
+    avgTagVal = np.array(avgTagVal)
+    return bVal, bValErr, MmagVal, MmagValStd, avgTagVal
+
 
 def calcRVsTag(dat, binsize, tag):
     avgR = []
