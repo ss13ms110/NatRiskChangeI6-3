@@ -37,7 +37,7 @@ models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (
 Lcut1 = -5
 Lcut2 = 0
 Ucut = 5
-stp = 0.5
+stp = 1
 
 # MAIN
 
