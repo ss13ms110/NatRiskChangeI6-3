@@ -51,3 +51,8 @@ equidistant bins
 
 Make different plots for b-Value Vs Stress  
 
+NEW
+Use maximum of Mmain - Mw
+
+## working after 7-08-2020
+1. CUmulative plots with Mm-Mmax to be max(cata)

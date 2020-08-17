@@ -14,7 +14,6 @@ import datetime as dt
 
 
 # user inputs
-polyResp = raw_input(funcFile.bcol.BOLD + "Read Polygon from saved [Y] or generate NEW [N]: " + funcFile.bcol.ENDC)
 ASResp = raw_input(funcFile.bcol.BOLD + "Read AS data from saved [Y] or from ISCpkl [N]: " + funcFile.bcol.ENDC)
 
 
@@ -22,7 +21,6 @@ ASResp = raw_input(funcFile.bcol.BOLD + "Read AS data from saved [Y] or from ISC
 srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
 srcmodPath = './../../raw_data/srcmod/srcmod_fsp_2019Mar'
 McFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-polyDir = './../2_McCalc/outputs/polys'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/stress_values'
@@ -80,26 +78,11 @@ for srcRow in srcRows:
     # for next 1 year in a region of 100x100x50
 
     print funcFile.bcol.OKBLUE + "Working on %s..." %(srcFname.split(".")[0]) + funcFile.bcol.ENDC
-    # condition to use polygons from saved files or to generate new
-    if polyResp == 'N' or polyResp == 'n':
-        # get polygon buffer around the mainshock fault
-        slpFile = srcmodPath + '/' + srcFname
-        xBuffer, yBuffer, polyBuffer = funcFile.getBuffer(slpFile, Hdist)
+   
+    # get polygon buffer around the mainshock fault
+    slpFile = srcmodPath + '/' + srcFname
+    xBuffer, yBuffer, polyBuffer = funcFile.getBuffer(slpFile, Hdist)
 
-        polyFname = polyDir + '/' + srcFname.split('.')[0] + '.poly'
-        polyFid = open(polyFname, 'w')
-        for i, xBuf in enumerate(xBuffer):
-            polyFid.write('%8.3f  %8.3f\n' %(xBuf, yBuffer[i]))
-
-    elif polyResp == 'Y' or polyResp == 'y':
-        polyFname = polyDir + '/' + srcFname.split('.')[0] + '.poly'
-        polyData = np.loadtxt(polyFname)
-
-        polyBuffer = funcFile.XY2Buffer(polyData)
-
-    else:
-        print funcFile.bcol.FAIL + "Wrong input for Polygon!! Terminating" + funcFile.bcol.ENDC
-        quit()
 
     # check for aftershocks, if pkl files are present of not
     if ASResp == 'N' or ASResp == 'n':

@@ -224,7 +224,7 @@ def CalcMct(Mw, MSdatetime, AStime, Mc):
     Mctmp = Mw - 4.5 - 0.75*np.log10(ASdays)
 
     Mct = [Mc if m < Mc else m for m in Mctmp]
-
+    print [xx for xx in Mctmp if xx>Mc]
     return Mct
 
 # get poly region

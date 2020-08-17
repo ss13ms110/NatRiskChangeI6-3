@@ -1,16 +1,12 @@
-# Date: 02-04-2020
-# This script use Montecarlo sumilation to 
-# pick one slip model for each earthquake 
-# and make various plots
-# Inputs: combData.pkl, srcCatalog 
-# Outputs: various plots
+# generate plot on cumulative [tag] value
+# plots (b vs r<R etc.)
+# use only aftershocks within 3 months
 
 import numpy as np
 import pandas as pd
 import funcFile
 from itertools import chain
 from astropy.io import ascii
-import matplotlib.pyplot as plt
 import pickle
 import timeit as ti
 import warnings
@@ -23,10 +19,11 @@ Stime = ti.default_timer()
 combFile = './../3_CompAll/outputs/combData.pkl'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outP = './outputs/MCcumm/'
+outP = './outputs/MCmnth'
 
 #variables
-binsize = 300
+binsize = 100
+mnths = 3
 mulFactor = 1e-6    # convert Pa to MPa
 Lcut1 = -5
 Lcut2 = 0
@@ -44,8 +41,19 @@ combDataload = pd.read_pickle(combFile)
 print funcFile.printLoad("Combined data loaded at", Stime)
 
 # filter aftershocks above the Mc and Mct values [STEP 1]
-combData = funcFile.filterMc(combDataload, McValueFile)
+combDataTmp = funcFile.filterMc(combDataload, McValueFile)
 print funcFile.printProcess("Mc filter applied at", Stime)
+
+# ===========filter aftershocks within x months=========
+# load data from srcCata.txt
+srcDat = ascii.read(srcCataFile)
+print funcFile.printLoad("SRCMOD catalog loaded in", Stime)
+
+trimmedIds = [x['srcmodId'][:17] for x in srcDat]
+
+srcDat['srcmodId'][:] = trimmedIds
+
+combData = funcFile.filterMnths(combDataTmp, mnths, srcDat)
 
 # convert Pa to Mpa for homo_MAS, GF_MAS and GF_OOP
 for tag in tags[1:]:
@@ -58,13 +66,6 @@ for tag in tags[1:]:
 print funcFile.printProcess("Converted from Pa to Mpa at", Stime)
 
 
-# load data from srcCata.txt
-srcDat = ascii.read(srcCataFile)
-print funcFile.printLoad("SRCMOD catalog loaded in", Stime)
-
-trimmedIds = [x['srcmodId'][:17] for x in srcDat]
-
-srcDat['srcmodId'][:] = trimmedIds
 
 bValSave = dict()
 MmagSave = dict()
@@ -75,14 +76,12 @@ for tag in tags:
     sortedDat = combData.sort_values(by=[tag], kind='quicksort')
     
     # calculate bValue and Mmax
-    # bVal, bValErr, MmagVal, MmagValStd, avgTagVal = funcFile.calc_bCumm(sortedDat, binsize, tag)
     bVal, bValErr, MmagVal, avgTagVal = funcFile.calc_bCumm(sortedDat, binsize, tag)
     
     bValSave[tag] = MmagSave[tag] = avgTagVal
     bValSave[tag+'_bVal'] = bVal
     bValSave[tag+'_bValErr'] = bValErr
     MmagSave[tag+'_Mw-mag'] = MmagVal
-    # MmagSave[tag+'_Mw-magErr'] = MmagValStd
 
 
 # -------Saving to pickle ------------------

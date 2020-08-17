@@ -6,8 +6,8 @@ from itertools import chain
 
 
 # PATH
-outPath = './outputs/MCcumm/bin_300'
-figPath = './figs/MCcumm/bin_100'
+outPath = './outputs/MCmnth/bin_100'
+figPath = './figs/MCmnth/bin_100'
 
 
 # PRAMS

@@ -28,8 +28,8 @@ class bcol:
 polyResp = raw_input(bcol.BOLD + "Polygon from saved or generate NEW [S/N]: " + bcol.ENDC)
 
 # Path
-srcmodPath = '/home/shubham/Work/NatRisk/NatRiskChangeI6-3/raw_data/srcmod/srcmod_fsp_2019Mar'
-srcmodCata = './../1_preProcess/outputs/srcmodCata.txt'
+srcmodPath = '/home/sharma/Work/Project/git/NatRiskChangeI6-3/raw_data/srcmod/srcmod_fsp_2019Mar'
+srcmodCata = './../1_preProcess/outputs/testCata.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 polyDir = 'outputs/polys'
 McFile = './outputs/Mc_MAXC_1Yr.txt'
@@ -45,7 +45,7 @@ dHdist = 5
 Vdist = 50      # depth of volume (km)
 dVdist = 5
 binSize = 0.2
-McBuff = 0.2 
+McBuff = 0.2
 
 
 # load pkl file in memory

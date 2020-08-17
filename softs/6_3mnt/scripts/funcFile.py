@@ -5,6 +5,7 @@ import pandas as pd
 from astropy.table import Table
 import random
 import timeit as ti
+import datetime as dt
 
 # For coloured outputs in terminal
 class bcol:
@@ -61,16 +62,29 @@ def filterStress(df, a, b, tags):
     df = df.replace([np.inf, -np.inf], np.NaN).dropna()
     return df
 
-# calculate b value using Aki estimator
-def bVal_Mmax_avgTag(dat, tag):
-    magAvg = np.mean(dat['mag'] - dat['Mc(t)'])
-    b = 1/(np.log(10)*magAvg)
+# function to filter earthquakes within x months of mainshock
+def filterMnths(dat, mnths, srcDat):
+    filteredDat = pd.DataFrame()
 
-    Mmax = np.mean(dat['Mw-mag'])
+    for i in range(len(srcDat)):
+        yr = int(srcDat[i]['Yr'])
+        mn = int(srcDat[i]['Mn'])
+        dy = int(srcDat[i]['Dy'])
+        hr = int(srcDat[i]['Hr'])
+        mi = int(srcDat[i]['Mi'])
+        se = int(srcDat[i]['Sec'])
+        srcN = srcDat[i]['srcmodId']
 
-    avgTag = np.mean(dat[tag])
+        sDT = dt.datetime(yr, mn, dy, hr, mi, se) + dt.timedelta(seconds=1)
+        eDT = sDT + dt.timedelta(days=mnths*30)
+        
+        datTmp = dat[dat['MainshockID'] == srcN]
+        datTmp = datTmp[datTmp['time'] >= sDT]
+        datTmp = datTmp[datTmp['time'] <= eDT]
+        
+        filteredDat = filteredDat.append(datTmp)
 
-    return b, Mmax, avgTag
+    return filteredDat
 
 # calculate b value and ERROR using Aki estimator
 def bVal_Mmag_avgTag(dat, tag, i):
@@ -96,91 +110,7 @@ def bVal_Mmag_avgTag(dat, tag, i):
     return b, bErr, Mmagmax, avgTag
 
 
-
-# monteCarlo function
-def MCreal(srcDat):
-    srcIDall = list(srcDat['srcmodId'])
-    
-    srcIDuniq = sorted(set([i[:11] for i in srcIDall]))
-
-    # loop for every unique event
-    OnceModels = []
-    for srcName in srcIDuniq:
-        # filter all slip models for this particular event
-        eventRows = [list(x) for x in srcDat if x['srcmodId'][:11] == srcName]
-        
-        # randomly choose on model of all slip models
-        oneSlp = random.choice(eventRows)
-
-        # append to the list
-        OnceModels.append(oneSlp)
-    
-    # convert lists into a table
-    srcMCdat = Table(rows=OnceModels, names=srcDat.colnames)
-
-    return srcMCdat
-
-# monteCarlo function for Bootstraping
-def MCrealBS(srcDat, BSpram):
-    
-    # convert table rows to lists
-    eventRows = [list(x) for x in srcDat]
-
-    # get boot-straped rows
-    Models = random.sample(eventRows, BSpram)
-
-    # convert lists to table
-    srcMCBSdat = Table(rows=Models, names=srcDat.colnames)
-
-    return srcMCBSdat
-
 # calculate b-value for binned aftershocks
-def calc_b(dat, binsize, tag):
-    
-    bVal = []
-    MmaxVal = []
-    avgTagVal = []
-    for i in range(0, dat.shape[0], binsize):
-        binnedDf = dat.iloc[i:i+binsize]
-
-        b, Mmax, avgTag = bVal_Mmax_avgTag(binnedDf, tag)
-        bVal.append(b)
-        MmaxVal.append(Mmax)
-        avgTagVal.append(avgTag)
-
-    
-    bVal = np.array(bVal)
-    MmaxVal = np.array(MmaxVal)
-    avgTagVal = np.array(avgTagVal)
-    return bVal, MmaxVal, avgTagVal
-
-# calculate b-value and ERROR for binned aftershocks
-def calc_bErr(dat, binsize, tag):
-    
-    bVal = []
-    bValErr = []
-    MmagVal = []
-    MmagValStd = []
-    avgTagVal = []
-    for i in range(0, dat.shape[0], binsize):
-        binnedDf = dat.iloc[i:i+binsize]
-
-        b, bErr, Mmag, MmagStd, avgTag = bVal_Mmag_avgTag(binnedDf, tag)
-        bVal.append(b)
-        bValErr.append(bErr)
-        MmagVal.append(Mmag)
-        MmagValStd.append(MmagStd)
-        avgTagVal.append(avgTag)
-
-    
-    bVal = np.array(bVal)
-    bValErr = np.array(bValErr)
-    MmagVal = np.array(MmagVal)
-    MmagValStd = np.array(MmagValStd)
-    avgTagVal = np.array(avgTagVal)
-    return bVal, bValErr, MmagVal, MmagValStd, avgTagVal
-
-# calculate b-value CUMULATIVE for binned aftershocks
 def calc_bNEW(dat, binsize, tag):
     
     bVal = []
@@ -205,8 +135,7 @@ def calc_bNEW(dat, binsize, tag):
     return bVal, bValErr, MmagVal, avgTagVal
 
 
-#_____________________________________________________
-#               NEW
+# calculate b-value for CUMULATIVE binned aftershocks
 def calc_bCumm(dat, binsize, tag):
     
     bVal = []
@@ -217,7 +146,7 @@ def calc_bCumm(dat, binsize, tag):
     tgMin, tgMax = min(dat[tag]), max(dat[tag])
 
     tagRange = np.linspace(tgMin, tgMax, binsize)
-    print tagRange
+
     for i in tagRange[:-1]:
         if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
             if i < 0:
@@ -243,20 +172,3 @@ def calc_bCumm(dat, binsize, tag):
     MmagVal = np.array(MmagVal)
     avgTagVal = np.array(avgTagVal)
     return bVal, bValErr, MmagVal, avgTagVal
-#_____________________________________________________
-
-
-def calcRVsTag(dat, binsize, tag):
-    avgR = []
-    avgTagVal = []
-
-    for i in range(0, dat.shape[0], binsize):
-        binnedDf = dat.iloc[i:i+binsize]
-
-        avgR.append(np.mean(binnedDf['R']))
-        avgTagVal.append(np.mean(binnedDf[tag]))
-
-    avgR = np.array(avgR)
-    avgTagVal = np.array(avgTagVal)
-
-    return avgR, avgTagVal
