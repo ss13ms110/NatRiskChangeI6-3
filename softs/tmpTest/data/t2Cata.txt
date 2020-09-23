@@ -1,0 +1,2 @@
+Yr Jday Mn Dy Hr Mi Sec lat lon Dp Mag Id srcmodId
+2011 (070) 03 11 05 46 21.00    38.104   142.861   13.5  9.0 2011070054621  s2011TOHOKU02GUSM.fsp

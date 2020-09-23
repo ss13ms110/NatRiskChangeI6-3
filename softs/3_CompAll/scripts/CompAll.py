@@ -24,7 +24,7 @@ McFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/stress_values'
-CombPklFile = './outputs/combData.pkl'
+CombPklFile = './outputs/combData_7_2.pkl'
 
 
 # variables
@@ -146,12 +146,12 @@ for srcRow in srcRows:
     #              accumulate all stress data in one dataframe
     # -----------------------------------------------------------------------
         # check if stress files are present for all models
+        evResp = 1
         for stressDir in stressList:
             EvDirPath = stressDirPath + '/' + stressDir + '/' + srcFname.split('.')[0]
-            
-            evResp = 0
-            if os.path.isdir(EvDirPath):
-                evResp = 1
+                        
+            if not os.path.isdir(EvDirPath):
+                evResp = 0
         
         # if stress files are there then execute the stress-aftershock allocation
         if evResp == 1:
@@ -166,6 +166,7 @@ for srcRow in srcRows:
                 depAll = []
                 stressAll = []
                 # loop for layers
+                ind = 0
                 for d in Dlist:
                     stressFname = EvStressDir + '/' + srcFname.split('.')[0] + '_' + str(d) + '.txt'
                     Sdata = np.loadtxt(stressFname)
@@ -181,7 +182,10 @@ for srcRow in srcRows:
                         depAll = np.append(depAll, np.full(len(Sdata[areaIndex,0]), d))
 
                     else:
-                        stressAll = np.append(stressAll, Sdata[:,2])                    
+                        strTP = np.concatenate((Sdata[ind:,2], Sdata[:ind,2]))  # workaround for shifted arrays
+                        stressAll = np.append(stressAll, strTP)
+
+                    ind += 1                         
                 
                     
                 if stressDir == 'homo_MAS':

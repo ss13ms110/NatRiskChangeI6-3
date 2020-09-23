@@ -16,7 +16,7 @@ Stime = ti.default_timer()
 
 
 #PATHS
-combFile = './../3_CompAll/outputs/combData.pkl'
+combFile = './../3_CompAll/outputs/combData.pklOLD'
 srcCataFile = './../1_preProcess/outputs/testCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 outP = './outputs/MCmnth'
@@ -65,19 +65,27 @@ for tag in tags[1:]:
 
 print funcFile.printProcess("Converted from Pa to Mpa at", Stime)
 
-
-
 bValSave = dict()
 MmagSave = dict()
+
 
 for tag in tags:
     print tag
     # sort data in ascending order
     sortedDat = combData.sort_values(by=[tag], kind='quicksort')
     
-    # calculate bValue and Mmax
-    bVal, bValErr, MmagVal, avgTagVal = funcFile.calc_bCumm(sortedDat, binsize, tag)
-    
+    # calculate bValue and Mmax CUMULATIVE
+    bValCu, bValErrCu, MmagValCu, avgTagValCu = funcFile.calc_bCumm(sortedDat, binsize, tag)
+
+    # non cumulative
+    bVal, bValErr, MmagVal, avgTagVal = funcFile.calc_bNEW(sortedDat, binsize, tag)
+
+    # cumulative
+    bValSave[tag+'Cu'] = MmagSave[tag+'Cu'] = avgTagValCu
+    bValSave[tag+'_bValCu'] = bValCu
+    bValSave[tag+'_bValErrCu'] = bValErrCu
+    MmagSave[tag+'_Mw-magCu'] = MmagValCu
+
     bValSave[tag] = MmagSave[tag] = avgTagVal
     bValSave[tag+'_bVal'] = bVal
     bValSave[tag+'_bValErr'] = bValErr

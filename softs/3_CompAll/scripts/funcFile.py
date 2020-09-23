@@ -210,7 +210,8 @@ def CalcR(filePath, catalog, slipTol):
         # slipCut = np.median(slip)
         # slipCut = max(slip)*(1-slipTol/100.0)
         # R.append(min(r[(slip > slipCut)]))
-        R.append(min(r))
+        R.append(min(r[(slip > 0)]))            # take all slip values positive
+        # R.append(min(r))
 
     return np.array(R)
 
@@ -221,10 +222,12 @@ def CalcMct(Mw, MSdatetime, AStime, Mc):
 
     ASdays = [0.01 if x == 0.0 else x for x in ASdaysTmp]
 
-    Mctmp = Mw - 4.5 - 0.75*np.log10(ASdays)
+    try:
+        Mctmp = Mw - 4.5 - 0.75*np.log10(ASdays)
+    except:
+        Mctmp = Mw - 4.5 - 0.75*np.log10(0.01)
 
     Mct = [Mc if m < Mc else m for m in Mctmp]
-    print [xx for xx in Mctmp if xx>Mc]
     return Mct
 
 # get poly region

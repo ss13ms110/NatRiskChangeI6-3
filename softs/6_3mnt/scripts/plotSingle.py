@@ -6,14 +6,14 @@ from itertools import chain
 
 
 # PATH
-outPath = './outputs/MCmnth/bin_100'
-figPath = './figs/MCmnth/bin_100'
+outPath = './outputs/MCmnth/Rinc/Rbin_500'
+figPath = './figs/MCmnth/Rinc/Rbin_500'
 
 
 # PRAMS
 fileN = ['bValDF.pkl', 'Mw-magDF.pkl']
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
-models = ['R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
+models = ['r<R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
 val = ['_bVal', '_Mw-mag']
 lbl = ['b-Value', 'M$_{main}-M_w$']
 Lcut1 = -5
@@ -48,9 +48,12 @@ for ii,fl in enumerate(fileN):
                 ax1.set_xlim(Lcut1, Ucut)
 
             if ii == 0:
-                ax1.errorbar(df[tag], df[tag+val[ii]], yerr=df[tag+val[ii]+'Err'], marker='.', ms='10', linestyle="None", c='k', ecolor='grey')
+                ax1.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**4, c='grey')
+                ax1.errorbar(df[tag+'Cu'], df[tag+val[ii]+'Cu'], yerr=df[tag+val[ii]+'ErrCu'], marker='.', ms='10', linestyle="None", c='k', ecolor='grey')
+                
             else:
-                ax1.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**6, c='black')
+                ax1.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**4, c='grey')
+                ax1.scatter(df[tag+'Cu'], df[tag+val[ii]+'Cu'], marker='.', s=2**6, c='black')
  
             
         else:
@@ -61,9 +64,11 @@ for ii,fl in enumerate(fileN):
             ax2.set_ylim(ylim1[ii][0], ylim1[ii][1])
 
             if ii == 0:
-                ax2.errorbar(df[tag], df[tag+val[ii]], yerr=df[tag+val[ii]+'Err'], marker='.', ms='10', linestyle="None", c='k', ecolor='grey')
+                ax2.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**4, c='grey')
+                ax2.errorbar(df[tag+'Cu'], df[tag+val[ii]+'Cu'], yerr=df[tag+val[ii]+'ErrCu'], marker='.', ms='10', linestyle="None", c='k', ecolor='grey')
             else:
-                ax2.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**6, c='black')
+                ax2.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**4, c='grey')
+                ax2.scatter(df[tag+'Cu'], df[tag+val[ii]+'Cu'], marker='.', s=2**6, c='black')
 
     fig1.savefig(figPath + '/' + fl.split('.')[0] + '_1.png')
     fig2.savefig(figPath + '/' + fl.split('.')[0] + '_2.png')

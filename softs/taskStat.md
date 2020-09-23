@@ -56,3 +56,72 @@ Use maximum of Mmain - Mw
 
 ## working after 7-08-2020
 1. CUmulative plots with Mm-Mmax to be max(cata)
+2. output in ./outputs/MC/cummTest
+
+# make plot by going through each sequence and look for largest aftershock with stress 
+also plot non-cumulative values in background [DONE]
+
+# for calculating new VM stress
+VM_1 ---> std = (25, 25, 25, 0.1)    Nsample = 1500    
+          CFSn = CFS[(CFS>0.0)]
+          svm.append(np.sum(CFSn)/(len(CFSn)))
+          combData_1.pkl
+
+
+VM_2 ---> std = (20, 20, 20, 0.1)    Nsample = 1500    
+          CFSn = CFS[(CFS>0.0)]
+          svm.append(np.sum(CFSn)/(len(CFSn)))
+          combData_2.pkl
+
+VM_3 ---> std = (30, 30, 30, 0.1)    Nsample = 1500
+          CFSn = CFS[(CFS>0.0)]
+          svm.append(np.sum(CFSn)/(len(CFSn)))
+          combData_3.pkl
+        
+VM_OLD ---> td = (25, 25, 25, 0.1)    Nsample = 1500    
+            svm.append(np.sum(CFS[(CFS>0.0)])/(float(Nsample)))
+            combData.pklOLD
+
+VM_4 ---> std = (30, 30, 30, 0.1)    Nsample = 1500
+          svm.append(np.sum(CFS[(CFS>0.0)])/(float(Nsample)))       Running
+          combData_3.pkl
+
+# DATE: 25-08-2020 [NEW TASK]
+1. increment R with 100/500 bins and calculate b-value [MC_Rinc.py]
+2. make mag vs stress vs distance plot [magVsStressVsR.py]
+
+-----------------------------------------------------------------------------------------------
+# MEETING 26-08-2020 [MINUTES]   [[[ 7_tests ]]]                                                           ----
+1. try calculating R in different ways (5%, 10%, excluding 0 slips)                        ----
+2. get freq-mag distribution before and after the kink (say <5k and >10 km)                ----
+3. plot histograms for all-stress values and stress values of max mag aftershocks          ----
+4. point 3 for distance                                                                    ----
+-----------------------------------------------------------------------------------------------
+
+# TO-DO
+1. R calculation by excluding 0 slip patches [t1]
+    combData_7_1.pkl
+    binsize = 300
+    mnths = 3 and 1 [3 mnth good]
+
+2. freq-mag distribution before and after the kink
+    MC_months.py with extracting data for GR plot
+    * plots generated with events upto <0.7 - <3.3 [GRplot_1.png]   |
+                                       <1.4 - <3.3 [GRplot_2.png]   | [obsolete]
+                                       <2 - <3.3 [GRplot_3.png]     |
+                                       <2.7 - <3.3 [GRplot_4.png]   |
+    * plots for cuts: [GRplot_new.png] end-cut GR plots
+                    mcL = [5, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+                    lcL = [0, -1.5, -2.5, -0.5, 0, 0, 0]
+                    ucL = [120, 1.5, 2.0, 4.0, 1.2, 2.5, 4.2]
+
+3. Histograms: a combined plot with separate histogram of all aftershocks and aftershocks with maximum stress.
+4. RvS plots generated and found too high stress values for larger distances. So, moving on for next analysis
+    to check which events are causing this
+
+# Date - 15-90-2020
+1. Generate Temp stress maps for mainshocks where stress > 0.5 MPa is found in a distance of 119 to 120 km [t2]
+
+# PROBLEM
+1. A problem has been found with the displacement of location arrays in CombData script. has been temporarily fixed
+    * new combData output file name `combData_7_2.pkl`
