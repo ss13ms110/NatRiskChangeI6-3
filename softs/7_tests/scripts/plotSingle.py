@@ -6,25 +6,27 @@ from itertools import chain
 
 
 # PATH
-outPath = './outputs/t1'
-figPath = './figs/t1'
+outPath = './outputs/bVal'
+figPath = './figs/bVal'
 
 
 # PRAMS
 fileN = 'bValDF.pkl'
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
-models = ['r<R (km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (s>S MPa)', 'MS (s>S MPa)', 'VMS (s>S MPa)']
+titls = ['Distance', 'MAS$_0$', 'MAS', 'OOP', 'VM', 'MS', 'VMS']
+models = ['r<R (km)', '   s<S (MPa)   |   s>S (MPa)', '   s<S (MPa)   |   s>S (MPa)', 's<S (MPa)   |   s>S (MPa)', 's>S (MPa)', 's>S (MPa)', 's>S (MPa)']
+
 val = '_bVal'
 lbl = 'b-Value'
-Lcut1 = -5
+Lcut1 = -8
 Lcut2 = 0
-Ucut = 5
+Ucut = 8
 
 # MAIN
 
 # read pickle file
 
-ylim1 = [0.7, 1.1]
+ylim1 = [0.8, 1.2]
 df=pd.read_pickle(outPath + '/' + fileN)
 
 # initialise figure
@@ -46,10 +48,11 @@ for i,tag in enumerate(tags):
             ax1.set_xticks(np.arange(0,120,5))
         else:
             # ax1.set_xlim(Lcut1, Ucut)
-            ax1.set_xticks(np.arange(Lcut1,Ucut,0.5))
+            ax1.set_xticks(np.arange(Lcut1,Ucut,1))
 
         # ax1.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**4, c='grey')
         ax1.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms='10', linestyle="None", c='k', ecolor='grey')
+        ax1.set_title('%s' %(titls[i]), fontsize=24)
 
         
     else:
@@ -62,6 +65,19 @@ for i,tag in enumerate(tags):
 
         # ax2.scatter(df[tag], df[tag+val[ii]], marker='.', s=2**4, c='grey')
         ax2.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms='10', linestyle="None", c='k', ecolor='grey')
+        ax2.set_title('%s' %(titls[i]), fontsize=24)
+
+# ------------ magAvg -------------------------------------
+i = i+1
+ax2 = fig2.add_axes([xmin[i%4], ymin[i%4], dx, dy])
+ax2.set_xlabel(models[0], fontsize=24)
+ax2.set_xlim(0, 20)
+ax2.set_xticks(np.arange(0,120,5))
+ax2.set_ylabel('magAvg', fontsize=24)
+
+# ax2.set_ylim(0.475, 0.550)
+ax2.scatter(df['RCu'], df['R_magAvgCu'], c='black', s=2**6, marker='.')
+# ---------------------------------------------------------
 
 fig1.savefig(figPath + '/' + fileN.split('.')[0] + '_1.png')
 fig2.savefig(figPath + '/' + fileN.split('.')[0] + '_2.png')

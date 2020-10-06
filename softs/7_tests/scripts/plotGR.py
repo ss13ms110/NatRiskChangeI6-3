@@ -5,12 +5,12 @@ from itertools import chain
 from math import ceil, log10
 
 # path
-GRP = './outputs/t1/GRdict.pkl'
-GRfn = './figs/t1/GRplot/GRplot_new.png'
+GRP = './outputs/bVal/GRdict.pkl'
+GRfn = './figs/bVal/GRplot/GRplot_new.png'
 
 
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
-mcL = [5, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+mcL = [3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
 lcL = [0, -1.5, -2.5, -0.5, 0, 0, 0]
 ucL = [120, 1.5, 2.0, 4.0, 1.2, 2.5, 4.2]
 

@@ -6,7 +6,7 @@ from astropy.table import Table
 import random
 import timeit as ti
 import datetime as dt
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 # For coloured outputs in terminal
 class bcol:
@@ -90,6 +90,8 @@ def filterMnths(dat, mnths, srcDat):
 # calculate b value and ERROR using Aki estimator
 def bVal_Mmag_avgTag(dat, tag, i):
     magAvg = np.mean(dat['mag'] - dat['Mc(t)'])
+    
+
     n = len(dat['mag'] - dat['Mc(t)'])
     b = 1/(np.log(10)*magAvg)
 
@@ -106,20 +108,45 @@ def bVal_Mmag_avgTag(dat, tag, i):
     if tag == 'R':
         avgTag = np.max(dat[tag])
     # avgTag = np.mean(dat[tag])
-    return b, bErr, avgTag
+    return b, bErr, magAvg, avgTag
+
+def bVal_Mmag_avgTag_R(dat, tag, tagi):
+    magAvg = np.mean(dat['mag'] - dat['Mc(t)'])
+
+    n = len(dat['mag'] - dat['Mc(t)'])
+    b = 1/(np.log(10)*magAvg)
+
+    bErr = b/np.sqrt(n)
+    
+
+    if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
+        if tagi < 0:
+            avgTag = np.max(dat[tag])
+        else:
+            avgTag = np.min(dat[tag])
+    else:
+        avgTag = np.min(dat[tag])
+    if tag == 'R':
+        avgTag = np.max(dat[tag])
+    # avgTag = np.mean(dat[tag])
+    return b, bErr, magAvg, avgTag
+
 
 
 # calculate b-value for CUMULATIVE binned aftershocks
-def calc_bCumm(dat, binsize, tag):
+def calc_bCumm(dat, binsize, tag, dR, dS):
     
     bVal = []
     bValErr = []
-    MmagVal = []
+    magAvgVal = []
     avgTagVal = []
 
     tgMin, tgMax = min(dat[tag]), max(dat[tag])
-
-    tagRange = np.linspace(tgMin, tgMax, binsize)
+    print tgMin, "---", tgMax
+    dd = dS
+    if tag == 'R':
+        dd = dR
+    tagRange = np.arange(tgMin, tgMax, dd)
     
     for i in tagRange[:-1]:
         if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
@@ -128,29 +155,33 @@ def calc_bCumm(dat, binsize, tag):
             else:
                 binnedDf = dat[(dat[tag] >= i)]
         elif tag == 'R':
+            # binnedDf = dat[(dat[tag] >= i) & (dat[tag] < i+dd)]
             binnedDf = dat[(dat[tag] <= i)]
+            
         else:
             binnedDf = dat[(dat[tag] >= i)]
 
-        if len(binnedDf) > 2000:
-            b, bErr, avgTag = bVal_Mmag_avgTag(binnedDf, tag, i)
+        if len(binnedDf) > 500:
+            b, bErr, magAvg, avgTag = bVal_Mmag_avgTag(binnedDf, tag, i)
 
             bVal.append(b)
             bValErr.append(bErr)
+            magAvgVal.append(magAvg)
             avgTagVal.append(avgTag)
 
     
     bVal = np.array(bVal)
     bValErr = np.array(bValErr)
+    magAvgVal = np.array(magAvgVal)
     avgTagVal = np.array(avgTagVal)
-    return bVal, bValErr, avgTagVal
+    return bVal, bValErr, magAvgVal, avgTagVal
 
 # calculate b-value for CUMULATIVE binned aftershocks adding 100 bins in R
 def calc_bCumm_R(dat, binR, tag):
     print "        cumm RR"
     bVal = []
     bValErr = []
-    MmagVal = []
+    magAvgVal = []
     avgTagVal = []
 
     tgData = np.array(dat[tag])
@@ -172,12 +203,12 @@ def calc_bCumm_R(dat, binR, tag):
 
         else:
             binnedDf = dat[(dat[tag] >= tgData[i])]
-
-        b, bErr, Mmagmax, avgTag = bVal_Mmag_avgTag(binnedDf, tag, i)
+        
+        b, bErr, magAvg, avgTag = bVal_Mmag_avgTag_R(binnedDf, tag, tgData[i])
 
         bVal.append(b)
         bValErr.append(bErr)
-        MmagVal.append(Mmagmax)
+        magAvgVal.append(magAvg)
         avgTagVal.append(avgTag)
 
         # i INCREMENT
@@ -188,9 +219,9 @@ def calc_bCumm_R(dat, binR, tag):
     
     bVal = np.array(bVal)
     bValErr = np.array(bValErr)
-    MmagVal = np.array(MmagVal)
+    magAvgVal = np.array(magAvgVal)
     avgTagVal = np.array(avgTagVal)
-    return bVal, bValErr, MmagVal, avgTagVal
+    return bVal, bValErr, magAvgVal, avgTagVal
 
 # function to get GR data
 def getGR(dat, tag, cutList, lc, uc, tags):

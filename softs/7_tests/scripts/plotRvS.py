@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # path
-RvS = './outputs/t1/RvSdict.pkl'
-RvSfn1 = './figs/t1/RvSplot/RvSplot_1.png'
-RvSfn2 = './figs/t1/RvSplot/RvSplot_2.png'
+RvS = './outputs/bVal/RvSdict.pkl'
+RvSfn1 = './figs/bVal/RvSplot/RvSplot_1.png'
+RvSfn2 = './figs/bVal/RvSplot/RvSplot_2.png'
 
 
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
@@ -66,7 +66,7 @@ for i, tag in enumerate(tags[1:]):
 plt.subplots_adjust(wspace=0.5, hspace=0.5)
 fig.suptitle("R vs Stress plots for end-points GR plots")
 # plt.show()
-plt.savefig(RvSfn1)
+# plt.savefig(RvSfn1)
 
 
 # For R
@@ -101,10 +101,10 @@ for i, tag in enumerate(tags[1:]):
     ax1.set_xlim(lc[tags[0]], lc[tags[0]]+cutList[tags[0]])
     ax1.set_ylim(-1, 3)
     ax2.set_xlim(uc[tags[0]]-cutList[tags[0]], uc[tags[0]])
-    ax2.set_ylim(-1, 1)
+    ax2.set_ylim(-0.05, 0.05)
 
-    ax1.scatter(lcR, lcS, s=2**6, marker='.', label='%s' %(models[i+1]))
-    ax2.scatter(ucR, ucS, s=2**6, marker='.', label='%s' %(models[i+1]))
+    ax1.scatter(lcRbinMid, lcSavg, s=2**6, marker='.', label='%s' %(models[i+1]))
+    ax2.scatter(ucRbinMid, ucSavg, s=2**6, marker='.', label='%s' %(models[i+1]))
 
 
     ax1.legend()

@@ -29,7 +29,7 @@ CombPklFile = './data/combData_t2.pkl'
 
 
 # variables
-dT = 365        # 1 year
+dT = 92      # 1 year
 Hdist = 100     # km
 Vdist = 50      # km
 Dlist = np.arange(2.5,50,5)
@@ -71,6 +71,8 @@ for srcRow in srcRows:
     Mw = float(srcRow.split()[10])
     srcFname = srcRow.split()[12]
     
+    adp = Dlist[np.argmin(Dlist - Dp)]
+    
     try:
         Mc = float([Mcrow[1] for Mcrow in Mcdat if Mcrow[0] == srcFname.split('.')[0]][0])
     except:
@@ -96,6 +98,7 @@ for srcRow in srcRows:
 
         ASfileFlg = 0
         if resp == 1:
+            
             ASpklFname = ASpklPath + '/' + srcFname.split('.')[0] + '.pkl'
 
             ASpklDf = ISCdfNew[['latitude', 'longitude', 'mag', 'depth', 'time']]
@@ -209,14 +212,14 @@ for srcRow in srcRows:
                        
                 # print stressDf
             plt.figure()
-            lap = latAll[depAll == 27.5]
-            lop = lonAll[depAll == 27.5]
-            vmp = vm[depAll == 27.5]
-            s1, s2 = -2.5, 1
+            lap = latAll[depAll == adp]
+            lop = lonAll[depAll == adp]
+            vmp = vm[depAll == adp]
+            s1, s2, ds = -2, 5, 0.2
             vmp[np.where(vmp < s1)] = s1 + 0.001
             vmp[np.where(vmp >= s2)] = s2 - 0.001
-            CS2 = plt.tricontourf(lop, lap, vmp, np.linspace(s1, s2, 100), vmin = s1, vmax = s2, cmap="Reds", levels=np.arange(s1, s2, 0.5))
-            cb2=plt.colorbar(CS2, ticks=np.arange(s1, s2, 0.5), fraction=0.047, pad=0.04)
+            CS2 = plt.tricontourf(lop, lap, vmp, np.linspace(s1, s2, 100), vmin = s1, vmax = s2, cmap="Reds", levels=np.linspace(s1, s2, 100))
+            cb2=plt.colorbar(CS2, ticks=np.linspace(s1, s2, 10), fraction=0.047, pad=0.04)
             for i in range(len(catalog['latitude'])):
                 laAS = catalog['latitude'][i]
                 loAS = catalog['longitude'][i]
@@ -224,13 +227,13 @@ for srcRow in srcRows:
                 tmAs = catalog['time'][i]
                 mgAs = catalog['mag'][i]
 
-
+                
                 # calculate the nearest distance to the grid
                 dd = funcFile.dist3D(laAS, loAS, deAS, latAll, lonAll, depAll)
                 mn = np.min(dd)
                 depMinIndx = np.argmin(dd)
                 
-                if R[i] > 110:
+                if R[i] < 1:
                     plt.scatter(loAS, laAS, marker='.', c='black', s=2**6)
                     sslo = stressDf.iloc[depMinIndx, [1]].to_numpy().tolist()
                     ssla = stressDf.iloc[depMinIndx, [0]].to_numpy().tolist()
@@ -240,8 +243,8 @@ for srcRow in srcRows:
                 tmpList = [tmAs, srcFname.split('.')[0], laAS, loAS, deAS, mgAs, R[i], Mw-mgAs, Mct[i]] 
                 
                 tmpList = tmpList + stressDf.iloc[depMinIndx, [3,4,5,6,7,8]].to_numpy().tolist()
-
+                
                 CombDf = CombDf.append(pd.Series(tmpList, index=CombDf.columns), ignore_index=True)
-plt.show()
+            plt.show()
 # save dataframe to a pickle file
 CombDf.to_pickle(CombPklFile)

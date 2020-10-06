@@ -144,3 +144,7 @@ dmypy.json
 # for 3_CompALl
 /softs/3_CompAll/*
 !softs/3_CompAll/scripts
+
+# for tmpTest
+/softs/tmpTest/*
+!softs/tmpTest/scripts

@@ -18,13 +18,13 @@ ASResp = raw_input(funcFile.bcol.BOLD + "Read AS data from saved [Y] or from ISC
 
 
 # Paths
-srcCataFile = './../1_preProcess/outputs/srcmodCata.txt'
+srcCataFile = './../1_preProcess/outputs/newSrcmodCata.txt'
 srcmodPath = './../../raw_data/srcmod/srcmod_fsp_2019Mar'
 McFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/stress_values'
-CombPklFile = './outputs/combData_7_2.pkl'
+CombPklFile = './outputs/newCombData_7_2.pkl'
 
 
 # variables
