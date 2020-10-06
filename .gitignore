@@ -146,5 +146,9 @@ dmypy.json
 !softs/3_CompAll/scripts
 
 # for tmpTest
-#/softs/tmpTest/*
-#!softs/tmpTest/scripts
+/softs/tmpTest/*
+!softs/tmpTest/scripts
+
+# for all data folders
+/softs/*/outputs
+
