@@ -149,6 +149,4 @@ dmypy.json
 /softs/tmpTest/*
 !softs/tmpTest/scripts
 
-# for all data folders
-/softs/*/outputs
 
