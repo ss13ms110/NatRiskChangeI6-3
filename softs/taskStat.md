@@ -140,3 +140,4 @@ VM_4 ---> std = (30, 30, 30, 0.1)    Nsample = 1500
 # *************************************************************************************************************
 # ___Generate stress values only for aftershock lat-lons using PSCRN+PSCMP___
 1. working directory [9_test]
+2. combData file [combData_9-1.pkl]
