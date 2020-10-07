@@ -150,5 +150,4 @@ dmypy.json
 !softs/tmpTest/scripts
 
 # for 9 test
-/softs/9_test/outputs/ASpkl
-
+/softs/9_test/outputs
