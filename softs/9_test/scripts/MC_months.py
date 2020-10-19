@@ -33,9 +33,9 @@ Ucut = 8
 dR = 1
 dS = 0.05
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
-mcL = [3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
-lcL = [0, -1.5, -2.5, -0.5, 0, 0, 0]
-ucL = [120, 1.5, 2.0, 4.0, 1.2, 2.5, 4.2]
+mcL = [2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+lcL = [1, -6.0, -6.0, -0.5, 0, 0, 0]
+ucL = [120, 6.0, 6.0, 6.0, 3.5, 6.5, 7.0]
 
 cutList = {tag: mcL[i] for i, tag in enumerate(tags)}
 lc = {tag: lcL[i] for i, tag in enumerate(tags)}
@@ -67,7 +67,7 @@ trimmedIds = [x['srcmodId'][:17] for x in srcDat]
 srcDat['srcmodId'][:] = trimmedIds
 
 combData = funcFile.filterMnths(combDataTmp, mnths, srcDat)
-print len(combData), '111'
+
 # # convert Pa to Mpa for homo_MAS, GF_MAS and GF_OOP
 # for tag in tags[1:]:
 #     if tag in tags[1:4]:
@@ -89,7 +89,7 @@ for tag in tags:
     if tag in tags[1:]:
         combData = combData[(combData[tag] >= Lcut1) & (combData[tag] <= Ucut)]
 
-    print tag, len(combData)
+
     # sort data in ascending order
     sortedDat = combData.sort_values(by=[tag], kind='quicksort')
     

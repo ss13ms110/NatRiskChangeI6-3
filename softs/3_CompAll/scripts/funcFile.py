@@ -105,8 +105,6 @@ def createBuffer(las, los, distDeg):
         polyTmp = Polygon(lr).buffer(distDeg)
         poly = poly.union(polyTmp)
 
-    
-        
     return np.array(poly.exterior.xy), poly
 
 # get srcmod buffer
