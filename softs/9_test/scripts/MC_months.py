@@ -17,10 +17,10 @@ Stime = ti.default_timer()
 
 
 #PATHS
-combFile = './outputs/CombData_9-1.pkl'
+combFile = './outputs/CombData_9-4.pkl'
 srcCataFile = './../1_preProcess/outputs/newSrcmodCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outP = './outputs/bVal'
+outP = './outputs/bVal4'
 
 #variables
 binsize = 300
@@ -34,7 +34,7 @@ dR = 1
 dS = 0.05
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 mcL = [2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
-lcL = [1, -6.0, -6.0, -0.5, 0, 0, 0]
+lcL = [0, -6.0, -6.0, -0.5, 0, 0, 0]
 ucL = [120, 6.0, 6.0, 6.0, 3.5, 6.5, 7.0]
 
 cutList = {tag: mcL[i] for i, tag in enumerate(tags)}
@@ -82,8 +82,8 @@ GRDict = dict()
 RvSdict = dict()
 
 for tag in tags:
-    if tag == 'R':
-        combData = combData[combData[tag] > 1]
+    # if tag == 'R':
+    #     combData = combData[combData[tag] > 1]
     if tag in tags[1:4]:
         combData[tag] = combData[tag] * mulFactor
     if tag in tags[1:]:

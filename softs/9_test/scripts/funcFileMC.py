@@ -77,7 +77,7 @@ def filterMnths(dat, mnths, srcDat):
         srcN = srcDat[i]['srcmodId']
 
         sDT = dt.datetime(yr, mn, dy, hr, mi, se) + dt.timedelta(seconds=1)
-        eDT = sDT + dt.timedelta(days=mnths*30)
+        eDT = sDT + dt.timedelta(days=int(mnths*30))
         
         datTmp = dat[dat['MainshockID'] == srcN]
         datTmp = datTmp[datTmp['time'] >= sDT]

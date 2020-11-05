@@ -5,13 +5,13 @@ from itertools import chain
 from math import ceil, log10
 
 # path
-GRP = './outputs/bVal/GRdict.pkl'
-GRfn = './figs/bVal/GRplot/GRplot_new.png'
+GRP = './outputs/bVal4/GRdict.pkl'
+GRfn = './figs/bVal4/GRplot/GRplot_new.png'
 
 
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 mcL = [2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
-lcL = [1, -6.0, -6.0, -0.5, 0, 0, 0]
+lcL = [0, -6.0, -6.0, -0.5, 0, 0, 0]
 ucL = [120, 6.0, 6.0, 6.0, 3.5, 6.5, 7.0]
 
 cutList = {tag: mcL[i] for i, tag in enumerate(tags)}

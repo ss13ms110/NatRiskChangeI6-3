@@ -141,3 +141,18 @@ VM_4 ---> std = (30, 30, 30, 0.1)    Nsample = 1500
 # ___Generate stress values only for aftershock lat-lons using PSCRN+PSCMP___
 1. working directory [9_test]
 2. combData file [combData_9-1.pkl]
+
+3. create new CombData using manually selected Mc values [combData_9-2.pkl] [bVal2] {++++++`DIDN'T WORK`++++++}
+
+4. create new COmbData by eliminating mainshocks from catalog [combData_9-3.pkl] [bVal3]
+
+5. create new COmbData by eliminating mainshocks from catalog AND using slip tolerance to calculate the R  [combData_9-4.pkl] [bVal4] {++++++`WORKED`++++++}
+    1. Histogram normalized by number of events in a sequence [9_test/figs/bVal4/magSR]
+    2. Histogram for RvsStress [9_test/figs/bVal4/RvSplot]
+
+# *************************************************************************************************************
+#                                           2nd PART
+# *************************************************************************************************************
+Working folder `2nd_part`
+# ___Calclate aftershock activity with distance___
+1. [1_calc-activity]

@@ -151,3 +151,6 @@ dmypy.json
 
 # for 9 test
 /softs/9_test/outputs
+
+# for 2nd_part
+/softs/2nd_part/outputs

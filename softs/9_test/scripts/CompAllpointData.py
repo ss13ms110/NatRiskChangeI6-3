@@ -24,7 +24,7 @@ McFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/pointStressData'
-CombPklFile = './outputs/CombData_9-1.pkl'
+CombPklFile = './outputs/CombData_9-4.pkl'
 notFile = './outputs/notWorked.txt'
 
 
@@ -209,7 +209,9 @@ for srcRow in srcRows:
                     
                     if len(stressArryRe) == len(laAS):
                         stackedArry = np.column_stack((tmAS, msID, laAS, loAS, deASLoc, mgAS, Ras, Mw-mgAS, MctAS, stressArryRe))
-                        CombDf = CombDf.append(pd.DataFrame(stackedArry, columns=dfColumns), ignore_index=True)
+                        newArry = stackedArry[stackedArry[:,5] < Mw-0.3]
+
+                        CombDf = CombDf.append(pd.DataFrame(newArry, columns=dfColumns), ignore_index=True)
                     else:
                         fidNot.write('%s\n' %(srcFname.split('.')[0]))
                         print "Not worked..."

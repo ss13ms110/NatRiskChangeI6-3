@@ -1,17 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from scipy.stats import binned_statistic
 
 # path
-RvS = './outputs/bVal/RvSdict.pkl'
-RvSfn1 = './figs/bVal/RvSplot/RvSplot_1.png'
-RvSfn2 = './figs/bVal/RvSplot/RvSplot_2.png'
+RvS = './outputs/bVal4/RvSdict.pkl'
+RvSfn1 = './figs/bVal4/RvSplot/RvSplot_1.png'
+RvSfn2 = './figs/bVal4/RvSplot/RvSplot_2.png'
 
 
 tags = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R (Km)', 'MAS$_0$ (MPa)', 'MAS (MPa)', 'OOP (MPa)', 'VM (MPa)', 'MS (MPa)', 'VMS (MPa)']
 mcL = [2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
-lcL = [1, -6.0, -6.0, -0.5, 0, 0, 0]
+lcL = [0, -6.0, -6.0, -0.5, 0, 0, 0]
 ucL = [120, 6.0, 6.0, 6.0, 3.5, 6.5, 7.0]
 cutList = {tag: mcL[i] for i, tag in enumerate(tags)}
 lc = {tag: lcL[i] for i, tag in enumerate(tags)}
@@ -25,39 +26,22 @@ fig = plt.figure(figsize=(10,15))
 
 for i, tag in enumerate(tags[1:]):
     
-    Rbin = np.arange(1, 120, 1)
+    Rbin = np.arange(0, 121, 1)
     RbinMid = (Rbin[1:] + Rbin[:-1])/2
-    lcR = np.array(RvS['lcR'+tag])
-    lcS = np.array(RvS['lcS'+tag])
-    
-    # hist
-    lcRdigi = np.digitize(lcR, Rbin)
-    print tag
-    lcSavg = []
-    lcRbbn = []
-    for j in range(1, len(Rbin)):
-        llc = lcS[lcRdigi == j]
-        if len(llc):
-            lcSavg.append(llc.mean())
-            lcRbbn.append(RbinMid[j-1])
+    lcR = list(RvS['lcR'+tag])
+    lcS = list(RvS['lcS'+tag])
+    lc_stat = binned_statistic(lcR, lcS, statistic='mean', bins=Rbin)
 
-
-
-    # lcSavg = [lcS[lcRdigi == j].mean() for j in range(1, len(Rbin))]
+    lcSavg = lc_stat.statistic    
     
 
-    ucR = np.array(RvS['ucR'+tag])
-    ucS = np.array(RvS['ucS'+tag])
+    ucR = list(RvS['ucR'+tag])
+    ucS = list(RvS['ucS'+tag])
     # # hist
     ucRdigi = np.digitize(ucR, Rbin)
-    ucSavg = []
-    ucRbbn = []
-    for j in range(1, len(Rbin)):
-        uuc = ucS[ucRdigi == j]
-        if len(uuc):
-            ucSavg.append(uuc.mean())
-            ucRbbn.append(RbinMid[j-1])
-    # ucSavg = [ucS[ucRdigi == j].mean() for j in range(1, len(Rbin))]
+    uc_stat = binned_statistic(ucR, ucS, statistic='mean', bins=Rbin)
+
+    ucSavg = uc_stat.statistic   
 
     ax = fig.add_subplot(3, 2, i+1)
 
@@ -69,11 +53,11 @@ for i, tag in enumerate(tags[1:]):
     ax.set_xlim(0, 120)
     ax.set_ylim(lc[tag], lc[tag]+cutList[tag])
 
-    ax.scatter(lcR, lcS, c='red', s=2**4, marker='.', label='%3.2f < Red < %3.2f' %(lc[tag], lc[tag]+cutList[tag]))
+    ax.scatter(RbinMid, lcSavg, c='red', s=2**4, marker='.', label='%3.2f < Red < %3.2f' %(lc[tag], lc[tag]+cutList[tag]))
 
     ax2 = ax.twinx()
     ax2.set_ylim(uc[tag]-cutList[tag], uc[tag])
-    ax2.scatter(ucR, ucS, c='black', s=2**4, marker='.', label='%3.2f < Black < %3.2f' %(uc[tag]-cutList[tag], uc[tag]))
+    ax2.scatter(RbinMid, ucSavg, c='black', s=2**4, marker='.', label='%3.2f < Black < %3.2f' %(uc[tag]-cutList[tag], uc[tag]))
 
     #legend
     h1, l1 = ax.get_legend_handles_labels()
@@ -95,20 +79,20 @@ for i, tag in enumerate(tags[1:]):
     
     lcRbin = np.arange(lc[tags[0]], lc[tags[0]]+cutList[tags[0]], 0.1)
     lcRbinMid = (lcRbin[1:] + lcRbin[:-1])/2
-    lcR = np.array(RvS['lc1'+tags[0]])
-    lcS = np.array(RvS['lc1'+tag])
+    lcR = list(RvS['lc1'+tags[0]])
+    lcS = list(RvS['lc1'+tag])
     # hist
-    lcRdigi = np.digitize(lcR, lcRbin)
-    lcSavg = [lcS[lcRdigi == j].mean() for j in range(1, len(lcRbin))]
+    lc_stat = binned_statistic(lcR, lcS, statistic='mean', bins=lcRbin)
+    lcSavg = lc_stat.statistic 
     
     ucRbin = np.arange(uc[tags[0]]-cutList[tags[0]], uc[tags[0]], 0.1)
     ucRbinMid = (ucRbin[1:] + ucRbin[:-1])/2
-    ucR = np.array(RvS['uc1'+tags[0]])
-    ucS = np.array(RvS['uc1'+tag])
+    ucR = list(RvS['uc1'+tags[0]])
+    ucS = list(RvS['uc1'+tag])
     # hist
-    ucRdigi = np.digitize(ucR, ucRbin)
-    ucSavg = [ucS[ucRdigi == j].mean() for j in range(1, len(ucRbin))]
-
+    uc_stat = binned_statistic(ucR, ucS, statistic='mean', bins=ucRbin)
+    ucSavg = uc_stat.statistic 
+    
     ax1 = fig.add_subplot(2, 1, 1)
     ax2 = fig.add_subplot(2, 1, 2)
 
@@ -118,10 +102,11 @@ for i, tag in enumerate(tags[1:]):
     ax2.set_ylabel("S")
     
     ax1.set_xlim(lc[tags[0]], lc[tags[0]]+cutList[tags[0]])
-    ax1.set_ylim(-1, 50)
+    ax1.set_ylim(-100, 150)
     ax2.set_xlim(uc[tags[0]]-cutList[tags[0]], uc[tags[0]])
-    ax2.set_ylim(-0.05, 0.05)
-
+    # ax2.set_ylim(-0.05, 0.05)
+    if i in [0,1,2]:
+        lcSavg, ucSavg = np.array(lcSavg)*1e-6, np.array(ucSavg)*1e-6
     ax1.scatter(lcRbinMid, lcSavg, s=2**6, marker='.', label='%s' %(models[i+1]))
     ax2.scatter(ucRbinMid, ucSavg, s=2**6, marker='.', label='%s' %(models[i+1]))
 

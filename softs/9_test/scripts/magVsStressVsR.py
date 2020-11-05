@@ -2,12 +2,11 @@
 
 import pandas as pd
 import numpy as np
-import funcFile
 from astropy.io import ascii
 
 
 # PATHS
-combFile = './outputs/CombData_9-1.pkl'
+combFile = './outputs/CombData_9-4.pkl'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 srcCataFile = './../1_preProcess/outputs/newSrcmodCata.txt'
 outP = './outputs/magSR/magSR.out'
@@ -23,8 +22,6 @@ combData = pd.read_pickle(combFile)
 
 # convert Pa to Mpa for homo_MAS, GF_MAS and GF_OOP
 for tag in tags[1:]:
-    if tag == 'R':
-        combData = combData[combData[tag] > 1]
     if tag in tags[1:4]:
         combData[tag] = combData[tag] * mulFactor
     if tag in tags[1:]:

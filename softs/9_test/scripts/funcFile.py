@@ -208,9 +208,9 @@ def CalcR(filePath, catalog, slipTol):
 
         r = dist3D(lati, loni, zi, lat, lon, z)
         # slipCut = np.median(slip)
-        # slipCut = max(slip)*(1-slipTol/100.0)
-        # R.append(min(r[(slip > slipCut)]))
-        R.append(min(r[(slip > 0)]))            # take all slip values positive
+        slipCut = max(slip)*(1-slipTol/100.0)
+        R.append(min(r[(slip > slipCut)]))
+        # R.append(min(r[(slip > 0)]))            # take all slip values positive
         # R.append(min(r))
 
     return np.array(R)
