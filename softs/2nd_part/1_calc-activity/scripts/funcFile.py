@@ -66,6 +66,7 @@ def filterMnths(dat, mnths, srcDat):
 
     return filteredDat
 
+# using binsize
 def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
     tagAvg = []
     rate = []
@@ -97,17 +98,131 @@ def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
 
     return rate, t, omoriT, tagAvg
 
+# using incremental bin
+def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
+    tagAvg = []
+    rate = []
+    t = []
+    omoriT = []
+    tgMin, tgMax = min(dat[tag]), max(dat[tag])
+    dd = dS
+    if tag == 'R':
+        dd = dR
+
+    tagRange = np.arange(tgMin, tgMax, dd)
+    x=[]
+    y=[]
+    for tag1, tag2 in zip(tagRange[:-1], tagRange[1:]):
+
+        binnedDf = dat[(dat[tag] >= tag1) & (dat[tag] < tag2)]
+        if len(binnedDf) >= 500:
+
+            tagAvg.append(np.mean(binnedDf[tag]))
+
+            oT = binnedDf.sort_values(by=['omoriT'], kind='quicksort')['omoriT']
+            omoriT.append(list(oT))
+            
+            # ---------------------------------------------
+            if tag == 'R':
+                x.append(tagAvg[-1])
+                y.append(len(binnedDf))
+            # ---------------------------------------------
+
+            # generate time bins
+            t_bins = []
+            t_start = min(oT)
+            dt = t_inc
+            while t_start < max(oT):
+                t_bins.append(t_start)
+                t_start += dt
+                dt *= T_INC_FACTOR
+            t_bins.append(max(oT))
+            
+            # calculate rate
+            hist, edges = np.histogram(list(oT), t_bins)
+            rate.append(hist/(edges[1:]-edges[:-1]))
+            t.append((edges[1:] + edges[:-1])/2.)
+
+    # ----------------------------------------------------
+    if tag == 'R':
+        plt.figure()
+        plt.scatter(x, y)
+        plt.xlabel('R')
+        plt.ylabel('Number')
+        plt.title('Number vs Distance')
+        plt.show()
+    # ----------------------------------------------------
+    return rate, t, omoriT, tagAvg
+
+# using cumulative bin
+def calcRateCumm(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
+    tagAvg = []
+    rate = []
+    t = []
+    omoriT = []
+    tgMin, tgMax = min(dat[tag]), max(dat[tag])
+    dd = dS
+    if tag == 'R':
+        dd = dR
+
+    tagRange = np.arange(tgMin, tgMax, dd)
+
+    for i in tagRange[:-1]:
+        if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
+            if i < 0:
+                binnedDf = dat[(dat[tag] <= i)]
+            else:
+                binnedDf = dat[(dat[tag] >= i)]
+        elif tag == 'R':
+            binnedDf = dat[(dat[tag] <= i)]
+            
+        else:
+            binnedDf = dat[(dat[tag] >= i)]
+
+        if len(binnedDf) >= 1000:
+            if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
+                if i < 0:
+                    tagAvg.append(np.max(binnedDf[tag]))
+                else:
+                    tagAvg.append(np.min(binnedDf[tag]))
+            elif tag == 'R':
+                tagAvg.append(np.max(binnedDf[tag]))
+            else:
+                tagAvg.append(np.min(binnedDf[tag]))
+
+            oT = binnedDf.sort_values(by=['omoriT'], kind='quicksort')['omoriT']
+            omoriT.append(list(oT))
+            
+            # generate time bins
+            t_bins = []
+            t_start = min(oT)
+            dt = t_inc
+            while t_start < max(oT):
+                t_bins.append(t_start)
+                t_start += dt
+                dt *= T_INC_FACTOR
+            t_bins.append(max(oT))
+            
+            # calculate rate
+            hist, edges = np.histogram(list(oT), t_bins)
+            rate.append(hist/(edges[1:]-edges[:-1]))
+            t.append((edges[1:] + edges[:-1])/2.)
+
+    return rate, t, omoriT, tagAvg
+
+
 # -----------------------OMORI support functions -------------------------
-def omoriRate(t, K, c, p):
-    return K/((c + t)**p)
+def omoriRate(t, mu, K, c, p):
+    return mu + K/(c + t)**p
 
 def funcOmori(args, t_1, T1, T2):
     """ LL calculated using Omori, 1983. Assuming background rate 0"""
-    K1 = np.square(args[0])
-    c1 = np.square(args[1])
-    p1 = np.square(args[2])
+    mu1 = np.square(args[0])
+    K1 = np.square(args[1])
+    c1 = np.square(args[2])
+    p1 = np.square(args[3])
 
-    Rintegrated = 0.0         # assuming background rate to be zero
+    Rintegrated = mu1*(T2 - T1)
 
     if p1 == 1.0:
         Rintegrated += K1 * (np.log(c1 + T2) - np.log(c1 + T1))
@@ -115,45 +230,46 @@ def funcOmori(args, t_1, T1, T2):
     else:
         Rintegrated += (K1/(1.0-p1)) * ((c1+T2)**(1.0-p1) - (c1+T1)**(1.0-p1))
 
-    sumLogR = np.sum(np.log(omoriRate(t_1, K1, c1, p1)))
+    sumLogR = np.sum(np.log(omoriRate(t_1, mu1, K1, c1, p1)))
 
     LL = sumLogR - Rintegrated
 
     return -LL
 
-def LLfit_omori(Kin, Cin, Pin, t_1):
+def LLfit_omori(MUin, Kin, Cin, Pin, t_1):
     T1, T2 = min(t_1), max(t_1)
 
-    x0 = [np.sqrt(Kin), np.sqrt(Cin), np.sqrt(Pin)]
+    x0 = [np.sqrt(MUin), np.sqrt(Kin), np.sqrt(Cin), np.sqrt(Pin)]
 
     res = minimize(funcOmori, x0, args=(t_1, T1, T2), method='Powell')
 
-    sqrtK, sqrtC, sqrtP = res.x
+    sqrtMU, sqrtK, sqrtC, sqrtP = res.x
 
+    mu_fit = np.square(sqrtMU)
     K_fit = np.square(sqrtK)
     c_fit = np.square(sqrtC)
     p_fit = np.square(sqrtP)
 
-    return K_fit, c_fit, p_fit
+    return mu_fit, K_fit, c_fit, p_fit
 
 # Function to calculate Omori parameters
-def calcOmori(Kin, Cin, Pin, t):
-
+def calcOmori(MUin, Kin, Cin, Pin, t):
+    mu = []
     K = []
     c = []
     p = []
     for i in range(len(t)):
-        
-        x = LLfit_omori(Kin, Cin, Pin, np.array(t[i]))
-        K.append(x[0])
-        c.append(x[1])
-        p.append(x[2])
+        x = LLfit_omori(MUin, Kin, Cin, Pin, np.array(t[i]))
+        mu.append(x[0])
+        K.append(x[1])
+        c.append(x[2])
+        p.append(x[3])
 
-    return K, c, p
+    return mu, K, c, p
 
-def plotOmori(rate, t, omoriT, K, c, p):
+def plotOmori(rate, t, omoriT, mu, K, c, p, tagAvg, figPath):
     
-    omoriR = omoriRate(omoriT, K, c, p)
+    omoriR = omoriRate(omoriT, mu, K, c, p)
     plt.figure()
     plt.scatter(t, rate, marker='o', c='black')
     plt.plot(omoriT, omoriR, color='red', linewidth=2)
@@ -161,5 +277,7 @@ def plotOmori(rate, t, omoriT, K, c, p):
     plt.yscale('log')
     plt.xlabel('Days')
     plt.ylabel('Rate')
-    plt.show()
+    plt.title('Omori law fit for %s_Avg = %6.2f\n mu = %5.2f  K = %03d  c = %4.2f  p = %4.2f' %(figPath.split('/')[-1], tagAvg, mu, K, c, p))
+    plt.savefig('%s/omoriFit_(%06.2f).png' %(figPath, tagAvg))
+    plt.close()
     

@@ -155,4 +155,15 @@ VM_4 ---> std = (30, 30, 30, 0.1)    Nsample = 1500
 # *************************************************************************************************************
 Working folder `2nd_part`
 # ___Calclate aftershock activity with distance___
-1. [1_calc-activity]
+1. Dir: [1_calc-activity] ---------------------------------------------------------------------------------------------------------------
+    1.1 New column added to combData ['omoriT'] and new file name is `newCombData.pkl`
+    1.2 For each 'tag' bin omoriT are arranged in increasing order then mu, K, c, p are estimated using LL on omoriT [`omoriPrams.pkl`]
+    1.3 What worked? `calcRate1` function, t_inc = 0.01, T_INC_FACTOR = 1.5, MONTHS = 1, dR = 1.0, dS = 0.05
+    1.4 Figures: figs/omori/omori_[1,2].png
+[TODO] Instead of plotting K calculate histogram from all stress data and then normalize rate with Volume and time and then plot it (2. point below)
+# ---------------------------------------------------------------------------------------------------------------------------------------
+
+2. Dir: [1_calc-activity] ---------------------------------------------------------------------------------------------------------------
+    2.1 Combine all stress data in 1 pkl file (data in `NatRiskChangeI6-3/raw_data/stress_values` is used as 
+        these are the stress values calculated in extended volume)
+# ---------------------------------------------------------------------------------------------------------------------------------------
