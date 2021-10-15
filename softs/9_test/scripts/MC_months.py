@@ -17,10 +17,10 @@ Stime = ti.default_timer()
 
 
 #PATHS
-combFile = './outputs/CombData_9-4.pkl'
+combFile = './outputs/CombData_9-1.pkl'
 srcCataFile = './../1_preProcess/outputs/newSrcmodCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outP = './outputs/bVal4'
+outP = './outputs/bVal5'
 
 #variables
 binsize = 300
@@ -119,6 +119,6 @@ fGR.close()
 fRvS.close()
 
 # -------Saving to pickle ------------------
-fbVal = open(outPath + '/bValDF.pkl', 'wb')
+fbVal = open(outPath + '/bValDF_1.pkl', 'wb')
 pickle.dump(bValSave, fbVal)
 fbVal.close()

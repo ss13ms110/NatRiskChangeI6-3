@@ -12,8 +12,8 @@ def getDays(dat, MSdt):
 
 # paths
 srcCataFile = './../../1_preProcess/outputs/newSrcmodCata.txt'
-combFile = './../../9_test/outputs/CombData_9-4.pkl'
-newCombFile = './outputs/newCombData.pkl'
+combFile = './../../9_test/outputs/CombData_9-3.pkl'
+newCombFile = './outputs/new1CombData.pkl'
 
 # load data from srcCata.txt
 srcDat = ascii.read(srcCataFile)

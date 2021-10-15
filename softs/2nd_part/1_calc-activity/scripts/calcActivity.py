@@ -8,13 +8,15 @@ from astropy.io import ascii
 import funcFile
 import timeit as ti
 from pickle import dump
+import normK
 
 Stime = ti.default_timer()
 
 # PATHS ----------------------------------------------------------
-combFile = './outputs/newCombData.pkl'
+combFile = './outputs/new1CombData.pkl'
 srcCataFile = './../../1_preProcess/outputs/newSrcmodCata.txt'
 omoriPramFile = './outputs/omoriPrams.pkl'
+stressDF = './outputs/stressDF'
 figDir = './figs'
 
 
@@ -22,23 +24,25 @@ figDir = './figs'
 t_inc = 0.01       # day
 T_INC_FACTOR = 1.5
 MONTHS = 1
-BINSIZE = 5000
-dR = 1.0
-dS = 0.05
+BINSIZE = 7200
+dR = 5.0
+dS = 0.2
 TAGS = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 models = ['R', 'MAS0', 'MAS', 'OOP', 'VM', 'MS', 'VMS']
 MUL_FACTOR = 1e-6    # convert Pa to MPa
-L_CUT = -8
-U_CUT = 8
+L_CUT = [0, -3, -3, -2, 0, 0, 0]
+U_CUT = [0, 3, 3, 6, 2, 6, 6]
+R_CUT = 200
 # initialize parameters
-MUin = 1.0
+MUin = 5.0
 Kin = 1.0
-Cin = 0.01
-Pin = 1.1
+Cin = 0.15
+Pin = 0.9
 
 # MAINS ----------------------------------------------------------
 # load combData
 combDataload = pd.read_pickle(combFile)
+combDataload = combDataload.dropna()
 print funcFile.printLoad("Combined data loaded at", Stime)
 
 # load data from srcCata.txt
@@ -54,45 +58,75 @@ combDataTmp = funcFile.filterMc(combDataload, srcDat['srcmodId'])
 print funcFile.printProcess("Mc filter applied at", Stime)
 
 # filter aftershocks for months
-combData = funcFile.filterMnths(combDataTmp, MONTHS, srcDat)
+combDataTmp2 = funcFile.filterMnths(combDataTmp, MONTHS, srcDat)
 print funcFile.printProcess("Aftershock filtered for %s months at" %(MONTHS), Stime)
+
+# filter under limits
+# for i, tag in enumerate(TAGS):
+#     if tag == 'R':
+#         combDataTmp2 = combDataTmp2[combDataTmp2[tag] <= R_CUT]
+#     if tag in TAGS[1:4]:
+#         combDataTmp2[tag] = combDataTmp2[tag] * MUL_FACTOR
+#     if tag in TAGS[1:]:
+#         combDataTmp2 = combDataTmp2[(combDataTmp2[tag] >= L_CUT[i]) & (combDataTmp2[tag] <= U_CUT[i])]
 
 omoriDict = dict()
 
 for i, tag in enumerate(TAGS):
+    combData = combDataTmp2.copy()
+    
     print funcFile.printProcess("Working on %s at" %(tag), Stime)
     figPath = '%s/%s' %(figDir, models[i])
     if tag == 'R':
-        combData = combData[combData[tag] <= 120]
-        combData.to_pickle('./outputs/tmp.pkl')
+        combData = combData[combData[tag] <= R_CUT]
     if tag in TAGS[1:4]:
         combData[tag] = combData[tag] * MUL_FACTOR
     if tag in TAGS[1:]:
-        combData = combData[(combData[tag] >= L_CUT) & (combData[tag] <= U_CUT)]
-
+        combData = combData[(combData[tag] >= L_CUT[i]) & (combData[tag] <= U_CUT[i])]
+    
+    
     # sort data in ascending order
-    # sortedDat = combData.sort_values(by=[tag], kind='quicksort')
+    sortedDat = combData.sort_values(by=[tag], kind='quicksort')
 
     # calculate event rates
-    # R_t, t, omoriT, tagAvg = funcFile.calcRate(sortedDat, t_inc, T_INC_FACTOR, BINSIZE, tag)
-    R_t, t, omoriT, tagAvg = funcFile.calcRate1(combData, t_inc, T_INC_FACTOR, dR, dS, tag)
+    if tag == 'GF_MAS':
+        R_t, t, omoriT, tagAvg = funcFile.calcRate1(combData, t_inc, T_INC_FACTOR, dR, dS, tag)
+    else:
+        R_t, t, omoriT, tagAvg, incFactor = funcFile.calcRate(sortedDat, t_inc, T_INC_FACTOR, BINSIZE, tag)
+    # R_t, t, omoriT, tagAvg = funcFile.calcRate1(combData, t_inc, T_INC_FACTOR, dR, dS, tag)
     # R_t, t, omoriT, tagAvg = funcFile.calcRateCumm(sortedDat, t_inc, T_INC_FACTOR, dR, dS, tag)
 
     # calculate Omori parameters
-    mu, K, c, p = funcFile.calcOmori(MUin, Kin, Cin, Pin, omoriT)
+    mu, K1, c, p = funcFile.calcOmori(MUin, Kin, Cin, Pin, omoriT)
     
     omoriDict[models[i]+'R_t'] = R_t
     omoriDict[models[i]+'t'] = t
     omoriDict[models[i]+'omoriT'] = omoriT
     omoriDict[models[i]+'tagAvg'] = tagAvg
     omoriDict[models[i]+'mu'] = mu
-    omoriDict[models[i]+'K'] = K
+    omoriDict[models[i]+'K1'] = K1
     omoriDict[models[i]+'c'] = c
     omoriDict[models[i]+'p'] = p
     
+    # normalize K
+    sDF = pd.read_pickle(stressDF+'/stressDF_'+models[i]+'.pkl')
+    if tag == 'GF_MAS':
+        K = normK.normalizeK(K1, tagAvg, tag, dR, dS, sDF)
+    else:
+        K = normK.normalizeK_binned(K1, tagAvg, tag, dR, dS, sDF, BINSIZE, incFactor, sortedDat)
+    omoriDict[models[i]+'K'] = K
+
+    # calculate omori time period (max days in each omori times)
+    
+    T = [max(np.array(tlist)) for tlist in omoriT]
+    T = np.array(T)
+ 
+    Nexp = normK.expectedN(np.array(K), np.array(p), np.array(c), np.array(T))
+    omoriDict[models[i]+'Nexp'] = Nexp
+
     # plot one omori
     for j in range(len(t)):
-        funcFile.plotOmori(R_t[j], t[j], omoriT[j], mu[j], K[j], c[j], p[j], tagAvg[j], figPath)
+        funcFile.plotOmori(R_t[j], t[j], omoriT[j], mu[j], K1[j], c[j], p[j], tagAvg[j], figPath)
 
 fout = open(omoriPramFile, 'wb')
 dump(omoriDict, fout)

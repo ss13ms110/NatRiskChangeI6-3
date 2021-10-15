@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # PATHS
-datFile = './outputs/omoriPrams.pkl'
+datFile = './outputs/omoriPrams_3mnt.pkl'
 figPath = './figs/omori'
 
 # PRAMS
@@ -40,14 +40,14 @@ for i, tag in enumerate(models):
         ax1p = fig1.add_axes([xmin[i%4], ymin[i%4]+2*dy, dx, dy])
 
         ax1K.set_xlabel(Tlabel2[i], fontsize=18)
-        ax1K.set_ylabel('K', fontsize=18)
+        ax1K.set_ylabel('K$_n$', fontsize=18)
         ax1c.set_ylabel('c', fontsize=18)
         ax1p.set_ylabel('p', fontsize=18)
         ax1c.set_xticks([])
         ax1p.set_xticks([])
         # ax1K.set_ylim(0,800)
         ax1c.set_ylim(0,0.5)
-        ax1p.set_ylim(0,1.0)
+        # ax1p.set_ylim(0,1.0)
         if tag == 'R':
             ax1K.set_xlim(0,120)
             ax1c.set_xlim(0,120)
@@ -66,7 +66,7 @@ for i, tag in enumerate(models):
         ax2p = fig2.add_axes([xmin[i%4], ymin[i%4]+2*dy, dx, dy])
 
         ax2K.set_xlabel(Tlabel2[i], fontsize=18)
-        ax2K.set_ylabel('K', fontsize=18)
+        ax2K.set_ylabel('K$_n$', fontsize=18)
         ax2c.set_ylabel('c', fontsize=18)
         ax2p.set_ylabel('p', fontsize=18)
         ax2K.set_xticks(np.arange(L_CUT, U_CUT, 0.1), minor=True)
@@ -74,7 +74,7 @@ for i, tag in enumerate(models):
         ax2p.set_xticks([])
         # ax2K.set_ylim(0,600)
         ax2c.set_ylim(0,0.5)
-        ax2p.set_ylim(0,1.0)
+        # ax2p.set_ylim(0,1.0)
         # PLOT
         ax2K.scatter(xAvg, yK, marker='.', s=2**5, c='red')
         ax2c.scatter(xAvg, yc, marker='.', s=2**5, c='green')

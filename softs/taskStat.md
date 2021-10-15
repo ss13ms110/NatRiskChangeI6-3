@@ -166,4 +166,50 @@ Working folder `2nd_part`
 2. Dir: [1_calc-activity] ---------------------------------------------------------------------------------------------------------------
     2.1 Combine all stress data in 1 pkl file (data in `NatRiskChangeI6-3/raw_data/stress_values` is used as 
         these are the stress values calculated in extended volume)
+    2.2 What worked? `calcRate1` function, t_inc = 0.01, T_INC_FACTOR = 1.5, MONTHS = 1, dR = 1.0, dS = 0.05
+    2.3 Figures: figs/omori/omori_[1,2].png. [NOTE] here aftershock rates are normalized with volume and time [normK.py]
 # ---------------------------------------------------------------------------------------------------------------------------------------
+3. Dir: [1_calc-activity] ---------------------------------------------------------------------------------------------------------------
+    2.1 Expected number of aftershocks are also plotted along with activity parameters
+    2.2 figures: figs/omori/Nexp_[1,2].png
+# ---------------------------------------------------------------------------------------------------------------------------------------
+
+
+## NEW
+# something went wrong with R calculations so trying new calculations
+Case 1: Distance calculated from max-slip patch [combData_9-1.pkl]
+Case 2: Distance calculated from slip patches with slip > 20% of max-slip [combData_9-3.pkl] >=80% of max slip
+Case 3: Distance calculated from slip patches with slip > mean of slip [combData_9-2.pkl]
+Case 4: Distance calculated from slip patches with slip > 50% of max-slip [combData_9-4.pkl]
+Case 5: Distance calculated from slip patches with slip > 80% of max-slip [combData_9-5.pkl] >=20% of max slip
+Case 6: Distance calculated from all slip patches [combData_9-6.pkl]
+Case 7: Distance calculated and averaged from all slip patches [combData_9-7.pkl]
+
+* Conclusion: We are going to use case 2 in main text and a combined figure of all cases in suppl.
+
+## 2nd PART a bit more
+final accepted file 'outputs/omoriPrams.pkl'
+************* best worked parameters are %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# PARAMS ---------------------------------------------------------
+t_inc = 0.01       # day
+T_INC_FACTOR = 1.5
+MONTHS = 1
+BINSIZE = 7200
+dR = 5.0
+dS = 0.2
+TAGS = ['R', 'homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
+models = ['R', 'MAS0', 'MAS', 'OOP', 'VM', 'MS', 'VMS']
+MUL_FACTOR = 1e-6    # convert Pa to MPa
+L_CUT = [0, -3, -3, -2, 0, 0, 0]
+U_CUT = [0, 3, 3, 6, 2, 6, 6]
+R_CUT = 200
+# initialize parameters
+MUin = 5.0
+Kin = 1.0
+Cin = 0.15
+Pin = 0.9
+
+# in funcFile.py as well
+incFactor = get_incFactor(tgLen, BINSIZE, lastVal=300)
+if len(binnedDf) >= 250:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

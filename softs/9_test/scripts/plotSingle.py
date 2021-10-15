@@ -17,7 +17,7 @@ titls = ['Distance', 'MAS$_0$', 'MAS', 'OOP', 'VM', 'MS', 'VMS']
 models = ['r<R (km)', '   s<S (MPa)   |   s>S (MPa)', '   s<S (MPa)   |   s>S (MPa)', 's<S (MPa)   |   s>S (MPa)', 's>S (MPa)', 's>S (MPa)', 's>S (MPa)']
 
 val = '_bVal'
-lbl = 'b-Value'
+lbl = 'b'
 Lcut1 = -8
 Lcut2 = 0
 Ucut = 8
@@ -73,7 +73,7 @@ ax2 = fig2.add_axes([xmin[i%4], ymin[i%4], dx, dy])
 ax2.set_xlabel(models[0], fontsize=24)
 ax2.set_xlim(0, 20)
 ax2.set_xticks(np.arange(0,120,5))
-ax2.set_ylabel('magAvg', fontsize=24)
+ax2.set_ylabel('$\\frac{\sum{(M_i - M_c(t)_i)}}{N}$', fontsize=24)
 
 # ax2.set_ylim(0.475, 0.550)
 ax2.scatter(df['RCu'], df['R_magAvgCu'], c='black', s=2**6, marker='.')

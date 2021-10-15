@@ -61,10 +61,26 @@ def filterMnths(dat, mnths, srcDat):
         datTmp = dat[dat['MainshockID'] == srcN]
         datTmp = datTmp[datTmp['time'] >= sDT]
         datTmp = datTmp[datTmp['time'] <= eDT]
-        
-        filteredDat = filteredDat.append(datTmp)
+        if not datTmp.empty:
+            filteredDat = filteredDat.append(datTmp)
 
     return filteredDat
+
+def get_incFactor(N, A, lastVal=1000):
+    """
+            A*x^0 + A*x^1 + A*x^2 + ... + A*x^n = N
+            (1-x^(n+1))/(1-x) = N/A
+            A*x^n = lastVal
+    """
+    xn = lastVal/float(A)
+    n = np.arange(1.,1000.)
+    N_by_A = N/float(A)
+    eq = (1-(xn**(1/n))**(n+1))/(1-xn**(1/n))
+    indx = np.argmin(abs(eq-N_by_A))
+    calc_N = n[indx]
+    incFactor = xn**(1/calc_N)
+    
+    return incFactor
 
 # using binsize
 def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
@@ -72,31 +88,39 @@ def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
     rate = []
     t = []
     omoriT = []
-    n = dat.shape[0] - dat.shape[0]%BINSIZE
-    for i in range(0, n, BINSIZE):
-        binnedDf = dat.iloc[i:i+BINSIZE]
+    tgLen = len(dat[tag])
 
-        tagAvg.append(np.mean(binnedDf[tag]))
-
-        oT = binnedDf.sort_values(by=['omoriT'], kind='quicksort')['omoriT']
-        omoriT.append(list(oT))
+    incFactor = get_incFactor(tgLen, BINSIZE, lastVal=300)
+    # for i in range(0, tgLen, BINSIZE):
+    i = 0
+    while i < tgLen:
         
-        # generate time bins
-        t_bins = []
-        t_start = min(oT)
-        dt = t_inc
-        while t_start < max(oT):
-            t_bins.append(t_start)
-            t_start += dt
-            dt *= T_INC_FACTOR
-        t_bins.append(max(oT))
-        
-        # calculate rate
-        hist, edges = np.histogram(list(oT), t_bins)
-        rate.append(hist/(edges[1:]-edges[:-1]))
-        t.append((edges[1:] + edges[:-1])/2.)
+        binnedDf = dat[i:i+BINSIZE]
+        if len(binnedDf) >= 250:
 
-    return rate, t, omoriT, tagAvg
+            tagAvg.append(np.mean(binnedDf[tag]))
+
+            oT = binnedDf.sort_values(by=['omoriT'], kind='quicksort')['omoriT']
+            omoriT.append(oT.to_numpy())
+            
+            # generate time bins
+            t_bins = []
+            t_start = min(oT)
+            dt = t_inc
+            while t_start < max(oT):
+                t_bins.append(t_start)
+                t_start += dt
+                dt *= T_INC_FACTOR
+            t_bins.append(max(oT))
+            
+            # calculate rate
+            hist, edges = np.histogram(list(oT), t_bins)
+            rate.append(hist/(edges[1:]-edges[:-1]))
+            t.append((edges[1:] + edges[:-1])/2.)
+        i += BINSIZE
+        BINSIZE = int(BINSIZE*incFactor)
+        
+    return rate, t, omoriT, tagAvg, incFactor
 
 # using incremental bin
 def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
@@ -108,24 +132,24 @@ def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
     dd = dS
     if tag == 'R':
         dd = dR
-
+    
     tagRange = np.arange(tgMin, tgMax, dd)
-    x=[]
-    y=[]
+    # x=[]
+    # y=[]
     for tag1, tag2 in zip(tagRange[:-1], tagRange[1:]):
 
         binnedDf = dat[(dat[tag] >= tag1) & (dat[tag] < tag2)]
-        if len(binnedDf) >= 500:
+        if len(binnedDf) >= 200:
 
             tagAvg.append(np.mean(binnedDf[tag]))
 
             oT = binnedDf.sort_values(by=['omoriT'], kind='quicksort')['omoriT']
-            omoriT.append(list(oT))
+            omoriT.append(oT.to_numpy())
             
             # ---------------------------------------------
-            if tag == 'R':
-                x.append(tagAvg[-1])
-                y.append(len(binnedDf))
+            # if tag == 'GF_MS':
+            #     x.append(tagAvg[-1])
+            #     y.append(len(binnedDf))
             # ---------------------------------------------
 
             # generate time bins
@@ -144,13 +168,13 @@ def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
             t.append((edges[1:] + edges[:-1])/2.)
 
     # ----------------------------------------------------
-    if tag == 'R':
-        plt.figure()
-        plt.scatter(x, y)
-        plt.xlabel('R')
-        plt.ylabel('Number')
-        plt.title('Number vs Distance')
-        plt.show()
+    # if tag == 'GF_MS':
+    #     plt.figure()
+    #     plt.scatter(x, y)
+    #     plt.xlabel('MAS')
+    #     plt.ylabel('Number')
+    #     plt.title('Number vs MS')
+    #     plt.show()
     # ----------------------------------------------------
     return rate, t, omoriT, tagAvg
 
@@ -281,3 +305,6 @@ def plotOmori(rate, t, omoriT, mu, K, c, p, tagAvg, figPath):
     plt.savefig('%s/omoriFit_(%06.2f).png' %(figPath, tagAvg))
     plt.close()
     
+
+
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------

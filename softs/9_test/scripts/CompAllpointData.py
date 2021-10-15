@@ -24,7 +24,7 @@ McFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 ASpklPath = './outputs/ASpkl'
 stressDirPath = './../../raw_data/pointStressData'
-CombPklFile = './outputs/CombData_9-4.pkl'
+CombPklFile = './outputs/CombData_9-6.pkl'
 notFile = './outputs/notWorked.txt'
 
 
@@ -33,7 +33,7 @@ dT = 365        # 1 year
 Hdist = 100     # km
 Vdist = 50      # km
 Dlist = np.arange(2.5,50,5)
-slipTol = 20    # in %  | DEPRECATED median slip is used instead
+slipTol = 80    # in %  | DEPRECATED median slip is used instead
 
 stressList = ['homo_MAS', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 
