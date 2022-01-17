@@ -4,6 +4,7 @@ import pandas as pd
 import datetime as dt
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
+import numdifftools as nd
 
 # For coloured outputs in terminal
 class bcol:
@@ -85,6 +86,7 @@ def get_incFactor(N, A, lastVal=1000):
 # using binsize
 def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
     tagAvg = []
+    Nobs = []
     rate = []
     t = []
     omoriT = []
@@ -99,6 +101,7 @@ def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
         if len(binnedDf) >= 250:
 
             tagAvg.append(np.mean(binnedDf[tag]))
+            Nobs.append(len(binnedDf[tag]))
 
             oT = binnedDf.sort_values(by=['omoriT'], kind='quicksort')['omoriT']
             omoriT.append(oT.to_numpy())
@@ -120,11 +123,12 @@ def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
         i += BINSIZE
         BINSIZE = int(BINSIZE*incFactor)
         
-    return rate, t, omoriT, tagAvg, incFactor
+    return rate, t, omoriT, tagAvg, incFactor, Nobs
 
 # using incremental bin
 def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
     tagAvg = []
+    Nobs = []
     rate = []
     t = []
     omoriT = []
@@ -142,6 +146,7 @@ def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
         if len(binnedDf) >= 200:
 
             tagAvg.append(np.mean(binnedDf[tag]))
+            Nobs.append(len(binnedDf[tag]))
 
             oT = binnedDf.sort_values(by=['omoriT'], kind='quicksort')['omoriT']
             omoriT.append(oT.to_numpy())
@@ -176,11 +181,12 @@ def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
     #     plt.title('Number vs MS')
     #     plt.show()
     # ----------------------------------------------------
-    return rate, t, omoriT, tagAvg
+    return rate, t, omoriT, tagAvg, Nobs
 
 # using cumulative bin
 def calcRateCumm(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
     tagAvg = []
+    Nobs = []
     rate = []
     t = []
     omoriT = []
@@ -202,8 +208,9 @@ def calcRateCumm(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
             
         else:
             binnedDf = dat[(dat[tag] >= i)]
-
-        if len(binnedDf) >= 1000:
+        
+        if len(binnedDf) >= 200:
+            Nobs.append(len(binnedDf[tag]))
             if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
                 if i < 0:
                     tagAvg.append(np.max(binnedDf[tag]))
@@ -231,8 +238,8 @@ def calcRateCumm(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
             hist, edges = np.histogram(list(oT), t_bins)
             rate.append(hist/(edges[1:]-edges[:-1]))
             t.append((edges[1:] + edges[:-1])/2.)
-
-    return rate, t, omoriT, tagAvg
+    print len(tagAvg), 'tttttttttttt'
+    return rate, t, omoriT, tagAvg, Nobs, tagRange
 
 
 # -----------------------OMORI support functions -------------------------
@@ -245,6 +252,26 @@ def funcOmori(args, t_1, T1, T2):
     K1 = np.square(args[1])
     c1 = np.square(args[2])
     p1 = np.square(args[3])
+
+    Rintegrated = mu1*(T2 - T1)
+
+    if p1 == 1.0:
+        Rintegrated += K1 * (np.log(c1 + T2) - np.log(c1 + T1))
+    
+    else:
+        Rintegrated += (K1/(1.0-p1)) * ((c1+T2)**(1.0-p1) - (c1+T1)**(1.0-p1))
+
+    sumLogR = np.sum(np.log(omoriRate(t_1, mu1, K1, c1, p1)))
+
+    LL = sumLogR - Rintegrated
+
+    return -LL
+
+def funcOmori_nonSqr(args, mu1, t_1, T1, T2):
+    """ LL calculated using Omori, 1983. Assuming background rate 0"""
+    K1 = args[0]
+    c1 = args[1]
+    p1 = args[2]
 
     Rintegrated = mu1*(T2 - T1)
 
@@ -274,22 +301,26 @@ def LLfit_omori(MUin, Kin, Cin, Pin, t_1):
     c_fit = np.square(sqrtC)
     p_fit = np.square(sqrtP)
 
-    return mu_fit, K_fit, c_fit, p_fit
+    hessian_ndt, info = nd.Hessian(funcOmori_nonSqr, method='complex', full_output=True)((K_fit, c_fit, p_fit), mu_fit, t_1, T1, T2)
+    K_err, c_err, p_err = np.sqrt(np.diag(np.linalg.inv(hessian_ndt)))
+    
+    return mu_fit, K_fit, c_fit, p_fit, K_err, c_err, p_err
 
 # Function to calculate Omori parameters
 def calcOmori(MUin, Kin, Cin, Pin, t):
-    mu = []
-    K = []
-    c = []
-    p = []
+    mu, K, c, p, mu_err, K_err, c_err, p_err = [], [], [], [], [], [], [], []
+    
     for i in range(len(t)):
         x = LLfit_omori(MUin, Kin, Cin, Pin, np.array(t[i]))
         mu.append(x[0])
         K.append(x[1])
         c.append(x[2])
         p.append(x[3])
+        K_err.append(x[4])
+        c_err.append(x[5])
+        p_err.append(x[6])
 
-    return mu, K, c, p
+    return mu, K, c, p, K_err, c_err, p_err
 
 def plotOmori(rate, t, omoriT, mu, K, c, p, tagAvg, figPath):
     

@@ -188,7 +188,8 @@ Case 7: Distance calculated and averaged from all slip patches [combData_9-7.pkl
 * Conclusion: We are going to use case 2 in main text and a combined figure of all cases in suppl.
 
 ## 2nd PART a bit more
-final accepted file 'outputs/omoriPrams.pkl'
+'softs/2nd_part/1_calc-activity/outputs/new1CombData.pkl' [this is same as `combData_9-3.pkl'` with an extra column *omoriT*]
+final accepted file 'softs/2nd_part/1_calc-activity/outputs/omoriPrams.pkl'
 ************* best worked parameters are %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # PARAMS ---------------------------------------------------------
 t_inc = 0.01       # day
@@ -213,3 +214,43 @@ Pin = 0.9
 incFactor = get_incFactor(tgLen, BINSIZE, lastVal=300)
 if len(binnedDf) >= 250:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&   ## FIGURES   &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# All figures scripts, data, figures path is here
+
+`Fig. 1`
+script: softs/1_preProcess/script/plot_SRCMOD_lat_lon.py
+Data: softs/1_preProcess/outputs/SRCMOD_lat_lon.txt
+Fig: softs/1_preProcess/figs/SRCMOD_lat_lon_map.pdf
+
+`Fig. 2`
+script: softs/9_test/script/plotSingleLog.py
+Data: softs/9_test/outputs/bVal5/bValDF_3.pkl
+Fig: softs/9_test/figs/bVal5/b-valVsSR_3.pdf
+
+`Fig. 3`
+script: softs/2nd_part/1_calc-activity/scripts/plot_OmoriPrams_err.py
+Data: softs/2nd_part/1_calc-activity/outputs/omoriPrams_err.pkl
+Fig: softs/2nd_part/1_calc-activity/figs/err/omori.pdf
+
+`Fig. 4`
+script: softs/2nd_part/1_calc-activity/script/plot_Nexp.py
+Data: softs/2nd_part/1_calc-activity/outputs/omoriPrams.pkl
+Fig: softs/2nd_part/1_calc-activity/figs/omori/Nexp_Nobs_loglog.pdf
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+# -------------------- Supplementary Material-------------------------------------
+1. b-value non-cumulative figure
+    Scripts: softs/9_test/scripts/MC_months_non-cum.py
+           : softs/9_test/scripts/plotSingleLogNonCum.py
+    Output:  softs/9_test/outputs/suppl/bValDF.pkl
+    Fig:     softs/9_test/figs/suppl/b-valVsSR_NonCumm.pdf
+
+2. Omori-Utsu cumulative figure
+    Scripts: softs/2nd_part/1_calc-activity/
+           : softs/2nd_part/1_calc-activity/
+    Output:  softs/2nd_part/1_calc-activity/
+    Fig:     softs/2nd_part/1_calc-activity/

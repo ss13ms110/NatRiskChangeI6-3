@@ -15,9 +15,9 @@ Stime = ti.default_timer()
 # PATHS ----------------------------------------------------------
 combFile = './outputs/new1CombData.pkl'
 srcCataFile = './../../1_preProcess/outputs/newSrcmodCata.txt'
-omoriPramFile = './outputs/omoriPrams_err.pkl'
+omoriPramFile = './outputs/omoriPrams_cumm.pkl'
 stressDF = './outputs/stressDF'
-figDir = './figs/err'
+figDir = './figs/cumm'
 
 
 # PARAMS ---------------------------------------------------------
@@ -89,12 +89,12 @@ for i, tag in enumerate(TAGS):
     sortedDat = combData.sort_values(by=[tag], kind='quicksort')
 
     # calculate event rates
-    if tag == 'GF_MAS':
-        R_t, t, omoriT, tagAvg, Nobs = funcFile.calcRate1(combData, t_inc, T_INC_FACTOR, dR, dS, tag)
-    else:
-        R_t, t, omoriT, tagAvg, incFactor, Nobs = funcFile.calcRate(sortedDat, t_inc, T_INC_FACTOR, BINSIZE, tag)
+    # if tag == 'GF_MAS':
+    #     R_t, t, omoriT, tagAvg, Nobs = funcFile.calcRate1(combData, t_inc, T_INC_FACTOR, dR, dS, tag)
+    # else:
+    #     R_t, t, omoriT, tagAvg, incFactor, Nobs = funcFile.calcRate(sortedDat, t_inc, T_INC_FACTOR, BINSIZE, tag)
     # R_t, t, omoriT, tagAvg = funcFile.calcRate1(combData, t_inc, T_INC_FACTOR, dR, dS, tag)
-    # R_t, t, omoriT, tagAvg = funcFile.calcRateCumm(sortedDat, t_inc, T_INC_FACTOR, dR, dS, tag)
+    R_t, t, omoriT, tagAvg, Nobs, tagRange = funcFile.calcRateCumm(sortedDat, t_inc, T_INC_FACTOR, dR, dS, tag)
 
     # calculate Omori parameters
     mu, K1, c, p, K1_err, c_err, p_err = funcFile.calcOmori(MUin, Kin, Cin, Pin, omoriT)
@@ -111,13 +111,15 @@ for i, tag in enumerate(TAGS):
     omoriDict[models[i]+'K1_err'] = K1_err
     omoriDict[models[i]+'c_err'] = c_err
     omoriDict[models[i]+'p_err'] = p_err
+   
     
     # normalize K
     sDF = pd.read_pickle(stressDF+'/stressDF_'+models[i]+'.pkl')
-    if tag == 'GF_MAS':
-        K, K_err, Nobs_norm = normK.normalizeK(K1, K1_err, tagAvg, tag, dR, dS, sDF, Nobs)
-    else:
-        K, K_err, Nobs_norm = normK.normalizeK_binned(K1, K1_err, tagAvg, tag, sDF, BINSIZE, incFactor, sortedDat, Nobs)
+    # if tag == 'GF_MAS':
+    #     K, K_err, Nobs_norm = normK.normalizeK(K1, K1_err, tagAvg, tag, dR, dS, sDF, Nobs)
+    # else:
+    #     K, K_err, Nobs_norm = normK.normalizeK_binned(K1, K1_err, tagAvg, tag, sDF, BINSIZE, incFactor, sortedDat, Nobs)
+    K, K_err, Nobs_norm = normK.normalizeK_cumm(K1, K1_err, tagAvg, tag, dR, dS, sDF, Nobs, tagRange)
     omoriDict[models[i]+'K'] = K
     omoriDict[models[i]+'K_err'] = K_err
 
@@ -125,14 +127,15 @@ for i, tag in enumerate(TAGS):
     
     T = [max(np.array(tlist)) for tlist in omoriT]
     T = np.array(T)
- 
+    print len(K), len(p), len(c), len(T)
+    print
     Nexp = normK.expectedN(np.array(K), np.array(p), np.array(c), np.array(T))
     omoriDict[models[i]+'Nexp'] = Nexp
     omoriDict[models[i]+'Nobs'] = Nobs_norm
 
-    # plot one omori
-    for j in range(len(t)):
-        funcFile.plotOmori(R_t[j], t[j], omoriT[j], mu[j], K1[j], c[j], p[j], tagAvg[j], figPath)
+    # # plot one omori
+    # for j in range(len(t)):
+    #     funcFile.plotOmori(R_t[j], t[j], omoriT[j], mu[j], K1[j], c[j], p[j], tagAvg[j], figPath)
 
 fout = open(omoriPramFile, 'wb')
 dump(omoriDict, fout)

@@ -15,8 +15,8 @@ def lin_fit(x, y, w=[]):
 
 
 # PATHS
-datFile = './outputs/omoriPrams.pkl'
-figPath = './figs/omori'
+datFile = './outputs/omoriPrams_err.pkl'
+figPath = './figs/err'
 
 # PRAMS
 models = ['R', 'MAS', 'OOP', 'VM', 'MS', 'VMS']
@@ -42,6 +42,9 @@ for i, tag in enumerate(models):
     yK = np.array(dat[tag+'K'])
     yc = np.array(dat[tag+'c'])
     yp = np.array(dat[tag+'p'])
+    yK_err = np.array(dat[tag+'K_err'])
+    yc_err = np.array(dat[tag+'c_err'])
+    yp_err = np.array(dat[tag+'p_err'])
     
     # declare axis
     axK = fig.add_axes([xmin[i], ymin[i], dx, dy])
@@ -54,10 +57,10 @@ for i, tag in enumerate(models):
     axp.set_ylabel('p', fontsize=18)
     axK.set_yticks(np.arange(0, 0.015, 0.005))
     axK.set_ylim(0, 0.01)
-    axc.set_yticks(np.arange(-0.1, 0.6, 0.2))
-    axc.set_ylim(0,0.6)
-    axp.set_yticks(np.arange(0.3, 1.2, 0.2))
-    axp.set_ylim(0.4,1.2)
+    axc.set_yticks(np.arange(-0.1, 0.7, 0.2))
+    axc.set_ylim(0,0.7)
+    axp.set_yticks(np.arange(0.3, 1.4, 0.2))
+    axp.set_ylim(0.4,1.5)
     axp.set_title('%s' %(titls[i]), fontsize=14, bbox=dict(facecolor='grey', alpha=0.3, edgecolor='none'))
     axK.set_xlim(L_CUT[i], U_CUT[i])
     axp.set_xlim(L_CUT[i], U_CUT[i])
@@ -67,13 +70,16 @@ for i, tag in enumerate(models):
         axK.set_xlabel('R (km)', fontsize=18)
 
         # PLOT
-        axK.scatter(xAvg, yK, marker='.', s=2**5, c='red')
-        axc.scatter(xAvg, yc, marker='.', s=2**5, c='green')
-        
+        # axK.scatter(xAvg, yK, marker='.', s=2**5, c='red')
+        axK.errorbar(xAvg, yK, yerr=yK_err, marker='.', ms='7', linestyle="None", c='red', ecolor='red')
+
+        # axc.scatter(xAvg, yc, marker='.', s=2**5, c='green')
+        axc.errorbar(xAvg, yc, yerr=yc_err, marker='.', ms='7', linestyle="None", c='green', ecolor='green')
         ycfit = lin_fit(xAvg, yc)
         axc.plot(xAvg, ycfit, '--', color='green', zorder=100)
-        axp.scatter(xAvg, yp, marker='.', s=2**5, c='blue')
-            
+        
+        # axp.scatter(xAvg, yp, marker='.', s=2**5, c='blue')
+        axp.errorbar(xAvg, yp, yerr=yp_err, marker='.', ms='7', linestyle="None", c='blue', ecolor='blue')
         ypfit = lin_fit(xAvg, yp)
         axp.plot(xAvg, ypfit, '--', color='blue', zorder=100)
         # ax1p.set_title('%s' %(titls[i]), fontsize=20)
@@ -83,9 +89,12 @@ for i, tag in enumerate(models):
         axK.set_xticks(np.arange(L_CUT[i], U_CUT[i], 0.1), minor=True)
         
         # PLOT
-        axK.scatter(xAvg, yK, marker='.', s=2**5, c='red')
-        axc.scatter(xAvg, yc, marker='.', s=2**5, c='green')
-        axp.scatter(xAvg, yp, marker='.', s=2**5, c='blue')
+        # axK.scatter(xAvg, yK, marker='.', s=2**5, c='red')
+        axK.errorbar(xAvg, yK, yerr=yK_err, marker='.', ms='7', linestyle="None", c='red', ecolor='red')
+        # axc.scatter(xAvg, yc, marker='.', s=2**5, c='green')
+        axc.errorbar(xAvg, yc, yerr=yc_err, marker='.', ms='7', linestyle="None", c='green', ecolor='green')
+        # axp.scatter(xAvg, yp, marker='.', s=2**5, c='blue')
+        axp.errorbar(xAvg, yp, yerr=yp_err, marker='.', ms='7', linestyle="None", c='blue', ecolor='blue')
         if tag == 'MAS':
             # c-fit
             ycfit_neg = lin_fit(xAvg[xAvg<0], yc[xAvg<0])

@@ -1,7 +1,10 @@
 import numpy as np
-import matplotlib.pyplot as plt
-def normalizeK(K, tagAvg, tag, dR, dS, sDF):
+# import matplotlib.pyplot as plt
+
+def normalizeK(K, K_err, tagAvg, tag, dR, dS, sDF, Nobs):
     K = np.array(K)
+    K_err = np.array(K_err)
+    Nobs = np.array(Nobs)
     
     dd = dS
     tagS = 'stress'
@@ -19,17 +22,85 @@ def normalizeK(K, tagAvg, tag, dR, dS, sDF):
 
     i = 0
     kk = []
+    kk_err = []
+    Nobs_norm = []
     for tag1, tag2 in zip(tagRange[:-1], tagRange[1:]):
         indx = (tagAvg>=tag1) & (tagAvg<tag2)
         if indx.any():
             # y.append(hist[i])
             kk = np.append(kk, K[indx]/hist[i])
+            kk_err = np.append(kk_err, K_err[indx]/hist[i])
+            Nobs_norm = np.append(Nobs_norm, Nobs[indx]/np.float(hist[i]))
         i+=1
 
-    return list(kk)
+    return list(kk), list(kk_err), list(Nobs_norm)
 
-def normalizeK_binned(K, tagAvg, tag, dR, dS, sDF, BINSIZE, incFactor, combDat):
+
+def normalizeK_cumm(K, K_err, tagAvg, tag, dR, dS, sDF, Nobs, tagRange):
     K = np.array(K)
+    K_err = np.array(K_err)
+    Nobs = np.array(Nobs)
+    
+    dd = dS
+    tagS = 'stress'
+    if tag == 'R':
+        dd = dR
+        tagS = 'R'
+
+    if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
+        sDF[tagS] = sDF[tagS] * 1e-6
+
+    # tgMin, tgMax = min(sDF[tagS]), max(sDF[tagS])
+    
+    # tagRange = np.arange(tgMin, tgMax, dd)
+    hist, _ = np.histogram(list(sDF[tagS]), tagRange)
+    
+    j = 0
+    kk = []
+    kk_err = []
+    Nobs_norm = []
+    if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
+        histL = np.cumsum(hist[hist<0])
+        histR = np.cumsum(hist[hist>=0])[::-1]
+        histLR = np.concatenate((histL,histR))
+        for i in tagRange[:-1]:
+            if i < 0:
+                indx = (tagAvg<=i)
+            else:
+                indx = (tagAvg>=i)
+            if indx.any():
+                kk = np.append(kk, K[indx][-1]/histLR[j])
+                kk_err = np.append(kk_err, K_err[indx][-1]/histLR[j])
+                Nobs_norm = np.append(Nobs_norm, Nobs[indx][-1]/np.float(histLR[j]))
+            j+=1
+
+    else:
+        if tag == 'R':
+            histR = np.cumsum(hist)
+            
+        else:
+            histR = np.cumsum(hist)[::-1]
+        
+        for i in tagRange[:-1]:
+            if tag == 'R':
+                indx = (tagAvg<=i)
+                
+            else:
+                indx = (tagAvg>=i)
+            if indx.any():
+                
+                kk = np.append(kk, K[indx][-1]/histR[j])
+                kk_err = np.append(kk_err, K_err[indx][-1]/histR[j])
+                Nobs_norm = np.append(Nobs_norm, Nobs[indx][-1]/np.float(histR[j]))
+            j+=1   
+    
+    return list(kk), list(kk_err), list(Nobs_norm)
+
+
+def normalizeK_binned(K, K_err, tagAvg, tag, sDF, BINSIZE, incFactor, combDat, Nobs):
+    K = np.array(K)
+    K_err = np.array(K_err)
+    Nobs = np.array(Nobs)
     
     tagS = 'stress'
     if tag == 'R':
@@ -56,13 +127,17 @@ def normalizeK_binned(K, tagAvg, tag, dR, dS, sDF, BINSIZE, incFactor, combDat):
     
     i = 0
     kk = []
+    kk_err = []
+    Nobs_norm = []
     for tag1, tag2 in zip(tagRange1[:-1], tagRange1[1:]):
         indx = (tagAvg>=tag1) & (tagAvg<tag2)
         if indx.any():
             kk = np.append(kk, K[indx]/hist[i])
+            kk_err = np.append(kk_err, K_err[indx]/hist[i])
+            Nobs_norm = np.append(Nobs_norm, Nobs[indx]/np.float(hist[i]))
         i+=1
 
-    return list(kk)
+    return list(kk), list(kk_err), list(Nobs_norm)
 
 
 # function to calculate expected N using Knorm, p, c and T

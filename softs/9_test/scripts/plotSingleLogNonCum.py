@@ -13,16 +13,16 @@ def lin_fit(x, y, xlim):
 
 
 # PATH
-outPath = './outputs/bVal5'
-figPath = './figs/bVal5'
+outPath = './outputs/suppl'
+figPath = './figs/suppl'
 
 
 # PRAMS
-fileN = 'bValDF_3.pkl'
+fileN = 'bValDF.pkl'
 tags = ['R', 'GF_MAS', 'GF_OOP', 'GF_VM', 'GF_MS', 'GF_VMC']
 
 titls = ['Distance', 'MAS', 'OOP', 'VM', 'MS', 'VMS']
-txt_x = [100, 6.5, 7.1, 3.6, 7.1, 7.4]
+txt_x = [100, 6.5, 7.3, 3.6, 7.1, 7.4]
 xlims = [10, 7, 6, 7, 4, 6]
 modelsY = [r'b$(r<R)$', r'b$(sgn(S)\times s>|S|$)', r'b$(sgn(S)\times s>|S|$)', r'b$(s>S)$', r'b$(s>S)$', r'b$(s>S)$']
 modelsX = ['R (km)', 'S (MPa)', 'S (MPa)', 'S (MPa)', 'S (MPa)', 'S (MPa)']
@@ -34,39 +34,39 @@ Ucut = 8
 
 # MAIN
 # read pickle file
-ylim1 = [0.85, 1.30, 1.15]
+ylim1 = [0.5, 1.30, 1.15]
 df=pd.read_pickle(outPath + '/' + fileN)
 
 # initialise figure
 fig = plt.figure(figsize=(15,15))
 xmin = [0.137, 0.56, 0.137, 0.56, 0.137, 0.56]
-ymin = [0.795, 0.795, 0.517, 0.517, 0.238, 0.238]
-dx = 0.16 
-dy = 0.08
+ymin = [0.815, 0.815, 0.535, 0.535, 0.257, 0.257]
+dx = 0.14 
+dy = 0.06
 
 for i,tag in enumerate(tags):
     ax = fig.add_subplot(3,2,i+1)
-    ax.set_xlabel(modelsX[i], fontsize=14)
-    ax.set_ylabel(modelsY[i], fontsize=16)
+    ax.set_xlabel(modelsX[i], fontsize=16)
+    ax.set_ylabel(modelsY[i], fontsize=14)
     ax.set_ylim(ylim1[0], ylim1[1])
     # ax.set_title('%s' %(titls[i]), fontsize=20)
-    ax2 = fig.add_axes([xmin[i], ymin[i], dx, dy])
-    ax2.yaxis.tick_right()
-    ax2.yaxis.set_label_position("right")
-    ax2.set_xlabel(modelsX[i], fontsize=10)
-    ax2.set_ylabel(modelsY[i], fontsize=10)
-    ax2.set_ylim(ylim1[0], ylim1[2])
-    ax2.tick_params(labelsize=8)
-    ax2.set_xscale('log')
+    # ax2 = fig.add_axes([xmin[i], ymin[i], dx, dy])
+    # ax2.yaxis.tick_right()
+    # ax2.yaxis.set_label_position("right")
+    # ax2.set_xlabel(models2[i], fontsize=8)
+    # ax2.set_ylabel(lbl, fontsize=8)
+    # ax2.set_ylim(ylim1[0], ylim1[2])
+    # ax2.tick_params(labelsize=8)
+    # ax2.set_xscale('log')
     # ax.set_xscale('log')
     if tag == tags[0]:            
         ax.set_xlim(0, 120)
         ax.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**3, linestyle="None", c='k', ecolor='grey')
         
-        ax2.set_xlim(1,120)
-        ax2.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**2, linestyle="None", c='grey', ecolor='grey')
+        # ax2.set_xlim(1,120)
+        # ax2.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**2, linestyle="None", c='grey', ecolor='grey')
         yfit = lin_fit(df[tag+'Cu'], df[tag+val+'Cu'], xlims[i])
-        ax2.plot(df[tag+'Cu'][(df[tag+'Cu']>0)], yfit, '--', color='black')
+        # ax2.plot(df[tag+'Cu'][(df[tag+'Cu']>0)], yfit, '--', color='black')
 
     elif tag in tags[1:3]:
         if tag == 'GF_OOP':
@@ -74,7 +74,7 @@ for i,tag in enumerate(tags):
             ax.set_xlim(-1,8)
         ax.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**3, linestyle="None", c='k', ecolor='grey')
 
-        ax2.set_xlim(0.01,10)
+        # ax2.set_xlim(0.01,10)
         # -----------------------------------------
         indxP = df[tag+'Cu']>0
         xp = df[tag+'Cu'][indxP]
@@ -84,22 +84,22 @@ for i,tag in enumerate(tags):
         xn = (-1)*df[tag+'Cu'][indxN]
         yn = df[tag+val+'Cu'][indxN]
         errN = df[tag+val+'ErrCu'][indxN]
-        ax2.errorbar(xp, yp, yerr=errP, marker='.', ms=2**2, linestyle="None", c='grey', ecolor='grey')
-        ax2.errorbar(xn, yn, yerr=errN, marker='.', ms=2**2, linestyle="None", c='red', ecolor='red')
+        # ax2.errorbar(xp, yp, yerr=errP, marker='.', ms=2**2, linestyle="None", c='grey', ecolor='grey')
+        # ax2.errorbar(xn, yn, yerr=errN, marker='.', ms=2**2, linestyle="None", c='red', ecolor='red')
         yfitp = lin_fit(xp, yp, xlims[i])
-        ax2.plot(xp[(xp>0)], yfitp, '--', color='black', zorder=100)
+        # ax2.plot(xp[(xp>0)], yfitp, '--', color='black', zorder=100)
         yfitn = lin_fit(xn, yn, xlims[i])
-        ax2.plot(xn[(xn>0)], yfitn, '--', color='brown', zorder=100)
+        # ax2.plot(xn[(xn>0)], yfitn, '--', color='brown', zorder=100)
         # -----------------------------------------
     else:
         ax.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**3, linestyle="None", c='k', ecolor='grey')
-        ax2.set_xlim(0.1,10)
-        ax2.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**2, linestyle="None", c='grey', ecolor='grey')
+        # ax2.set_xlim(0.1,10)
+        # ax2.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**2, linestyle="None", c='grey', ecolor='grey')
         yfit = lin_fit(df[tag+'Cu'][1:], df[tag+val+'Cu'][1:], xlims[i])
-        ax2.plot(df[tag+'Cu'][1:], yfit, '--', color='black', zorder=100 )
+        # ax2.plot(df[tag+'Cu'][1:], yfit, '--', color='black', zorder=100 )
 
     ax.text(txt_x[i],1.25, titls[i], fontweight='bold', bbox=dict(facecolor='grey', alpha=0.3, edgecolor='none'))
     
 
 plt.subplots_adjust(wspace=0.2, hspace=0.3)
-fig.savefig(figPath + '/b-valVsSR_3.pdf', bbox_inches = 'tight', pad_inches = 0.2)
+fig.savefig(figPath + '/b-valVsSR_NonCumm.pdf', bbox_inches = 'tight', pad_inches = 0.2)

@@ -176,9 +176,32 @@ def calc_bCumm(dat, binsize, tag, dR, dS):
     avgTagVal = np.array(avgTagVal)
     return bVal, bValErr, magAvgVal, avgTagVal
 
+# # calculate b-value for binned aftershocks
+def calc_bNonCumm(dat, binsize, tag):
+    
+    bVal = []
+    bValErr = []
+    MmagVal = []
+    avgTagVal = []
+    for i in range(0, dat.shape[0], binsize):
+        binnedDf = dat.iloc[i:i+binsize]
+
+        b, bErr, Mmagmax, avgTag = bVal_Mmag_avgTag(binnedDf, tag, i)
+
+        bVal.append(b)
+        bValErr.append(bErr)
+        MmagVal.append(Mmagmax)
+        avgTagVal.append(avgTag)
+
+    
+    bVal = np.array(bVal)
+    bValErr = np.array(bValErr)
+    MmagVal = np.array(MmagVal)
+    avgTagVal = np.array(avgTagVal)
+    return bVal, bValErr, MmagVal, avgTagVal
+
 # calculate b-value for CUMULATIVE binned aftershocks adding 100 bins in R
 def calc_bCumm_R(dat, binR, tag):
-    print "        cumm RR"
     bVal = []
     bValErr = []
     magAvgVal = []

@@ -20,7 +20,7 @@ Stime = ti.default_timer()
 combFile = './outputs/CombData_9-3.pkl'
 srcCataFile = './../1_preProcess/outputs/newSrcmodCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outP = './outputs/bVal5'
+outP = './outputs/suppl'
 
 #variables
 binsize = 300
@@ -93,8 +93,8 @@ for tag in tags:
     # sort data in ascending order
     sortedDat = combData.sort_values(by=[tag], kind='quicksort')
     
-    # calculate bValue and Mmax CUMULATIVE
-    bValCu, bValErrCu, magAvgCu, avgTagValCu = funcFile.calc_bCumm(sortedDat, binsize, tag, dR, dS)
+    # calculate bValue and Mmax
+    bValCu, bValErrCu, magAvgCu, avgTagValCu = funcFile.calc_bNonCumm(sortedDat, binsize, tag)
     
     
     # get GR data
@@ -119,6 +119,6 @@ fGR.close()
 fRvS.close()
 
 # -------Saving to pickle ------------------
-fbVal = open(outPath + '/bValDF_3.pkl', 'wb')
+fbVal = open(outPath + '/bValDF.pkl', 'wb')
 pickle.dump(bValSave, fbVal)
 fbVal.close()
