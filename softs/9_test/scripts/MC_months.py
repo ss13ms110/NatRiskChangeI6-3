@@ -18,9 +18,9 @@ Stime = ti.default_timer()
 
 #PATHS
 combFile = './outputs/CombData_9-3.pkl'
-srcCataFile = './../1_preProcess/outputs/newSrcmodCata.txt'
+srcCataFile = './../1_preProcess/outputs/srcmodCata-less-than-50.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outP = './outputs/bVal5'
+outP = './outputs/bValRevision2-less-than-50'
 
 #variables
 binsize = 300
@@ -49,18 +49,18 @@ outPath = outP
 
 # load combData
 combDataload = pd.read_pickle(combFile)
-print funcFile.printLoad("Combined data loaded at", Stime)
+print(funcFile.printLoad("Combined data loaded at", Stime))
 
 # filter aftershocks above the Mc and Mct values [STEP 1]
 combDataTmp = funcFile.filterMc(combDataload, McValueFile)
-print funcFile.printProcess("Mc filter applied at", Stime)
+print(funcFile.printProcess("Mc filter applied at", Stime))
 
 # combDataTmp = combDataTmpT.iloc[:20000]
 
 # ===========filter aftershocks within x months=========
 # load data from srcCata.txt
 srcDat = ascii.read(srcCataFile)
-print funcFile.printLoad("SRCMOD catalog loaded in", Stime)
+print(funcFile.printLoad("SRCMOD catalog loaded in", Stime))
 
 trimmedIds = [x['srcmodId'][:17] for x in srcDat]
 
@@ -82,6 +82,7 @@ GRDict = dict()
 RvSdict = dict()
 
 for tag in tags:
+    print(funcFile.printProcess("Working on %s ..." %(tag), Stime))
     # if tag == 'R':
     #     combData = combData[combData[tag] > 1]
     if tag in tags[1:4]:
@@ -119,6 +120,6 @@ fGR.close()
 fRvS.close()
 
 # -------Saving to pickle ------------------
-fbVal = open(outPath + '/bValDF_3.pkl', 'wb')
+fbVal = open(outPath + '/bValDF_final.pkl', 'wb')
 pickle.dump(bValSave, fbVal)
 fbVal.close()

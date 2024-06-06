@@ -20,7 +20,7 @@ Stime = ti.default_timer()
 combFile = './outputs/CombData_9-3.pkl'
 srcCataFile = './../1_preProcess/outputs/newSrcmodCata.txt'
 McValueFile = './../2_McCalc/outputs/Mc_MAXC_1Yr.txt'
-outP = './outputs/suppl'
+outP = './outputs/bValRevision'
 
 #variables
 binsize = 300

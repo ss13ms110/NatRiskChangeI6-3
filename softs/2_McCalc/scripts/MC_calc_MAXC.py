@@ -9,6 +9,7 @@ import pandas as pd
 import funcFile
 import datetime as dt
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as font_manager
 
 
 # FUNCTIONS
@@ -25,11 +26,11 @@ class bcol:
 
 # MAINS
 # inputs
-polyResp = raw_input(bcol.BOLD + "Polygon from saved or generate NEW [S/N]: " + bcol.ENDC)
+polyResp = input(bcol.BOLD + "Polygon from saved or generate NEW [S/N]: " + bcol.ENDC)
 
 # Path
-srcmodPath = '/home/sharma/Work/Project/git/NatRiskChangeI6-3/raw_data/srcmod/srcmod_fsp_2019Mar'
-srcmodCata = './../1_preProcess/outputs/testCata.txt'
+srcmodPath = '/home/fedora/Work/NRC/raw_data/srcmod/srcmod_fsp_2019Mar'
+srcmodCata = './../1_preProcess/outputs/srcmodCata.txt'
 iscPkl = './../1_preProcess/outputs/isc_events.pkl'
 polyDir = 'outputs/polys'
 McFile = './outputs/Mc_MAXC_1Yr.txt'
@@ -39,25 +40,32 @@ McFigsPath = './figs/Mc_plots'
 fout = open(McFile, 'w')
 
 # parameters
-dT = 365          # 1 year
+dT = 90          # 1 year
 Hdist = 100     # km
 dHdist = 5
 Vdist = 50      # depth of volume (km)
 dVdist = 5
 binSize = 0.2
 McBuff = 0.2
+lbl = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)']
+lbl1 = ['(a\')', '(b\')', '(c\')', '(d\')', '(e\')', '(f\')', '(g\')', '(h\')']
 
-
+plt.rc('font', family='sans-serif')
+plt.rc('font', size=12)
+plt.rc('legend', fontsize=10)
+font = font_manager.FontProperties(family='monospace',
+                                   weight='normal',
+                                   style='normal', size=12)
 # load pkl file in memory
 ISCdf = pd.read_pickle(iscPkl)
-print bcol.OKGREEN+"Pickle file loaded...\n" + bcol.ENDC
+print(bcol.OKGREEN+"Pickle file loaded...\n" + bcol.ENDC)
 
 # open mainshock catalog
 srcmodFid = open(srcmodCata, 'r')
 
 dummy = srcmodFid.readline()
 
-for line in srcmodFid:
+for ii,line in enumerate(srcmodFid):
     srcmodFlN = line.split()[12]
     Yr = int(line.split()[0])
     Mn = int(line.split()[2])
@@ -69,7 +77,9 @@ for line in srcmodFid:
     lo = float(line.split()[8])
     Mw = float(line.split()[10])
 
-    print bcol.OKBLUE + "Working on %s..." %(srcmodFlN.split(".")[0]) + bcol.ENDC
+    eq_label = '$M_w$ = %3.1f\nDatetime: %02d-%02d-%04d %02d:%02d:%02d\nLocation: %8.3f, %8.3f' %(Mw, Dy, Mn, Yr, Hr, Mi, Se, lo, la)
+    
+    print(bcol.OKBLUE + "Working on %s..." %(srcmodFlN.split(".")[0]) + bcol.ENDC)
     # condition to use polygons from saved files or to generate new
     if polyResp == 'N' or polyResp == 'n':
         # get polygon buffer around the mainshock fault
@@ -88,7 +98,7 @@ for line in srcmodFid:
         polyBuffer = funcFile.XY2Buffer(polyData)
 
     else:
-        print bcol.FAIL + "Wrong input for Polygon!! Terminating" + bcol.ENDC
+        print(bcol.FAIL + "Wrong input for Polygon!! Terminating" + bcol.ENDC)
         quit()
 
     # buffered list of aftershocks in the polygon region and within given time frame
@@ -111,7 +121,7 @@ for line in srcmodFid:
         magBins = np.arange(0,10.1,binSize)
 
         hist, edges, Mc = funcFile.McCalc(AScata, magBins, McBuff)
-
+        hist_cumsum = np.cumsum(hist[::-1])[::-1]
         # calculate Mc(t) using eq. from Helmstetter et.al. 2006
         Mct = Mw - 4.5 - 0.75*np.log(dT)
 
@@ -127,21 +137,33 @@ for line in srcmodFid:
         ax2 = f.add_subplot(122)
         # plotting
         ax1.set_xlabel('Days')
-        ax1.set_ylabel('Mag')
-        ax1.scatter(ASdays, AScata['mag'])
+        ax1.set_ylabel('Magnitude')
+        ddy = 0
+        ax1.scatter(ASdays, AScata['mag'], c='black', s=2, label='_nplegend_')
+        if Mw < max(AScata['mag'][:10]):
+            Mw = max(AScata['mag'][:10])
+            ddy = ASdays[np.argmax(AScata['mag'][:10])]
+        ax1.scatter(ddy, Mw, c='red', s=2**4, marker='*', label=eq_label)
+        # ax1.plot([],[],' ', label=eq_label)
         ax1.set_ylim(0,10)
-        ax1.set_xlim(-5,365)
-
-        ax2.set_xlabel('Mag')
-        ax2.set_ylabel('# of events')
+        ax1.set_xlim(-5,95)
+        # ax1.text(-0.15, 0.99, lbl[ii], fontsize=14, color='k', horizontalalignment='left', transform=ax1.transAxes)
+        ax1.legend(prop=font)
+        
+        ax2.set_xlabel('Magnitude')
+        ax2.set_ylabel('Number of events')
         ax2.set_yscale('log')
-        ax2.scatter((edges[1:] + edges[:-1])/2, hist)
-        ax2.vlines(Mc, min(hist), max(hist))
+        ax2.scatter((edges[1:] + edges[:-1])/2, hist, c='black', s=4, label='Non cumulative')
+        ax2.scatter((edges[1:] + edges[:-1])/2, hist_cumsum, c='red', s=4, label='Cumulative')
+        ax2.vlines(Mc, min(hist), max(hist_cumsum), color='gray', linewidth=2, linestyle='dashed')
         ax2.set_xlim(-0.1,10)
-        ylim = int(np.ceil(np.log10(max(hist))))
+        # ax2.text(-0.15, 0.99, lbl1[ii], fontsize=14, color='k', horizontalalignment='left', transform=ax2.transAxes)
+        ax2.text(Mc+0.5, 1, '$M_c$=%3.1f' %(Mc), fontsize=12, color='gray', horizontalalignment='left')
+        ylim = int(np.ceil(np.log10(max(hist_cumsum))))
         ax2.set_ylim(0.1, 10**ylim)
-        f.suptitle("%s" %(srcmodFlN.split(".")[0]), fontsize=20)
-        f.savefig("%s/%s.png" %(McFigsPath, srcmodFlN.split(".")[0]), dpi=200)
-
+        ax2.legend(loc='upper right')
+        # f.suptitle("%s" %(srcmodFlN.split(".")[0]), fontsize=20)
+        f.savefig("%s/%05d_%s.png" %(McFigsPath, ii, srcmodFlN.split(".")[0]), dpi=200, bbox_inches = 'tight')
+    
 fout.close()
         

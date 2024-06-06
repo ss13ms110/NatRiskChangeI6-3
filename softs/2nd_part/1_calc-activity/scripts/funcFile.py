@@ -39,7 +39,7 @@ def filterMc(combDataload, srcIDs):
         
         combDataTmp = combDataTmp[combDataTmp['mag'] > combDataTmp['Mc(t)']]
         
-        combData = combData.append(combDataTmp)
+        combData = pd.concat([combData, combDataTmp])
     
     return combData
 
@@ -63,7 +63,7 @@ def filterMnths(dat, mnths, srcDat):
         datTmp = datTmp[datTmp['time'] >= sDT]
         datTmp = datTmp[datTmp['time'] <= eDT]
         if not datTmp.empty:
-            filteredDat = filteredDat.append(datTmp)
+            filteredDat = pd.concat([filteredDat, datTmp])
 
     return filteredDat
 
@@ -91,7 +91,7 @@ def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
     t = []
     omoriT = []
     tgLen = len(dat[tag])
-
+    
     incFactor = get_incFactor(tgLen, BINSIZE, lastVal=300)
     # for i in range(0, tgLen, BINSIZE):
     i = 0
@@ -110,16 +110,26 @@ def calcRate(dat, t_inc, T_INC_FACTOR, BINSIZE, tag):
             t_bins = []
             t_start = min(oT)
             dt = t_inc
-            while t_start < max(oT):
+           
+            while t_start <= max(oT):
                 t_bins.append(t_start)
+                
+                if t_start == max(oT):
+                    break
+                
                 t_start += dt
                 dt *= T_INC_FACTOR
-            t_bins.append(max(oT))
+                                
+                if t_start + dt > max(oT):
+                    t_start = max(oT)
+            
             
             # calculate rate
             hist, edges = np.histogram(list(oT), t_bins)
             rate.append(hist/(edges[1:]-edges[:-1]))
             t.append((edges[1:] + edges[:-1])/2.)
+        
+        
         i += BINSIZE
         BINSIZE = int(BINSIZE*incFactor)
         
@@ -161,11 +171,19 @@ def calcRate1(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
             t_bins = []
             t_start = min(oT)
             dt = t_inc
+            
             while t_start < max(oT):
+                
                 t_bins.append(t_start)
+                
+                if t_start == max(oT):
+                    break
+                
                 t_start += dt
                 dt *= T_INC_FACTOR
-            t_bins.append(max(oT))
+                                
+                if t_start + dt > max(oT):
+                    t_start = max(oT)
             
             # calculate rate
             hist, edges = np.histogram(list(oT), t_bins)
@@ -238,7 +256,6 @@ def calcRateCumm(dat, t_inc, T_INC_FACTOR, dR, dS, tag):
             hist, edges = np.histogram(list(oT), t_bins)
             rate.append(hist/(edges[1:]-edges[:-1]))
             t.append((edges[1:] + edges[:-1])/2.)
-    print len(tagAvg), 'tttttttttttt'
     return rate, t, omoriT, tagAvg, Nobs, tagRange
 
 
@@ -254,6 +271,7 @@ def funcOmori(args, t_1, T1, T2):
     p1 = np.square(args[3])
 
     Rintegrated = mu1*(T2 - T1)
+    
 
     if p1 == 1.0:
         Rintegrated += K1 * (np.log(c1 + T2) - np.log(c1 + T1))
@@ -302,7 +320,21 @@ def LLfit_omori(MUin, Kin, Cin, Pin, t_1):
     p_fit = np.square(sqrtP)
 
     hessian_ndt, info = nd.Hessian(funcOmori_nonSqr, method='complex', full_output=True)((K_fit, c_fit, p_fit), mu_fit, t_1, T1, T2)
+    print(info)
     K_err, c_err, p_err = np.sqrt(np.diag(np.linalg.inv(hessian_ndt)))
+    
+    # ftol = 1.48e-8
+    # aa=[]
+    # tmp_i = np.zeros(len(res.x))
+    # for i in range(len(res.x)):
+    #     tmp_i[i] = 1.0
+    #     hess_inv_i = res.hess_inv(tmp_i)[i]
+    #     uncertainty_i = np.sqrt(max(1, abs(res.fun)) * ftol * hess_inv_i)
+    #     tmp_i[i] = 0.0
+    #     aa.append(uncertainty_i)
+    #     # print('x^{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], uncertainty_i))
+    
+    # [K_err, c_err, p_err] = aa[1:]
     
     return mu_fit, K_fit, c_fit, p_fit, K_err, c_err, p_err
 

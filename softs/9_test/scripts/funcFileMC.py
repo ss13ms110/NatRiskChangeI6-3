@@ -47,7 +47,6 @@ def filterMc(combDataload, McValueFile):
         srcName = line.split()[0]
 
         combDataTmp = combDataload[combDataload.MainshockID.isin([srcName])]
-        
         combDataTmp = combDataTmp[combDataTmp['mag'] > combDataTmp['Mc(t)']]
         
         combData = combData.append(combDataTmp)
@@ -110,6 +109,28 @@ def bVal_Mmag_avgTag(dat, tag, i):
     # avgTag = np.mean(dat[tag])
     return b, bErr, magAvg, avgTag
 
+def bVal_Mmag_avgTagFar(dat, tag, i):
+    magAvg = np.mean(dat['mag'] - dat['Mc(t)'])
+    
+
+    n = len(dat['mag'] - dat['Mc(t)'])
+    b = 1/(np.log(10)*magAvg)
+
+    bErr = b/np.sqrt(n)
+    
+
+    if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
+        if i < 0:
+            avgTag = np.max(dat[tag])
+        else:
+            avgTag = np.max(dat[tag])
+    else:
+        avgTag = np.max(dat[tag])
+    if tag == 'R':
+        avgTag = np.min(dat[tag])
+    # avgTag = np.mean(dat[tag])
+    return b, bErr, magAvg, avgTag
+
 def bVal_Mmag_avgTag_R(dat, tag, tagi):
     magAvg = np.mean(dat['mag'] - dat['Mc(t)'])
 
@@ -142,7 +163,6 @@ def calc_bCumm(dat, binsize, tag, dR, dS):
     avgTagVal = []
 
     tgMin, tgMax = min(dat[tag]), max(dat[tag])
-    print tgMin, "---", tgMax
     dd = dS
     if tag == 'R':
         dd = dR
@@ -156,6 +176,7 @@ def calc_bCumm(dat, binsize, tag, dR, dS):
                 binnedDf = dat[(dat[tag] >= i)]
         elif tag == 'R':
             # binnedDf = dat[(dat[tag] >= i) & (dat[tag] < i+dd)]
+            
             binnedDf = dat[(dat[tag] <= i)]
             
         else:
@@ -175,6 +196,53 @@ def calc_bCumm(dat, binsize, tag, dR, dS):
     magAvgVal = np.array(magAvgVal)
     avgTagVal = np.array(avgTagVal)
     return bVal, bValErr, magAvgVal, avgTagVal
+
+
+# calculate b-value for CUMULATIVE binned aftershocks for FAR side
+def calc_bCummFar(dat, binsize, tag, dR, dS):
+    
+    bVal = []
+    bValErr = []
+    magAvgVal = []
+    avgTagVal = []
+
+    tgMin, tgMax = min(dat[tag]), max(dat[tag])
+    
+    dd = dS
+    if tag == 'R':
+        dd = dR
+    tagRange = np.arange(tgMin, tgMax, dd)
+    
+    for i in tagRange[:-1]:
+        if tag in ['homo_MAS', 'GF_MAS', 'GF_OOP']:
+            if i < 0:
+                binnedDf = []
+                # binnedDf = dat[(dat[tag] >= i)]
+            else:
+                binnedDf = dat[(dat[tag] <= i)]
+        elif tag == 'R':
+            # binnedDf = dat[(dat[tag] >= i) & (dat[tag] < i+dd)]
+            binnedDf = dat[(dat[tag] >= i)]
+            
+            
+        else:
+            binnedDf = dat[(dat[tag] <= i)]
+
+        if len(binnedDf) > 500:
+            b, bErr, magAvg, avgTag = bVal_Mmag_avgTagFar(binnedDf, tag, i)
+
+            bVal.append(b)
+            bValErr.append(bErr)
+            magAvgVal.append(magAvg)
+            avgTagVal.append(avgTag)
+
+    
+    bVal = np.array(bVal)
+    bValErr = np.array(bValErr)
+    magAvgVal = np.array(magAvgVal)
+    avgTagVal = np.array(avgTagVal)
+    return bVal, bValErr, magAvgVal, avgTagVal
+
 
 # # calculate b-value for binned aftershocks
 def calc_bNonCumm(dat, binsize, tag):

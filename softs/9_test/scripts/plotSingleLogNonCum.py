@@ -73,7 +73,7 @@ for i,tag in enumerate(tags):
             ax.set_xticks(np.arange(-1, 9, 1))
             ax.set_xlim(-1,8)
         ax.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**3, linestyle="None", c='k', ecolor='grey')
-
+        
         # ax2.set_xlim(0.01,10)
         # -----------------------------------------
         indxP = df[tag+'Cu']>0
@@ -93,6 +93,9 @@ for i,tag in enumerate(tags):
         # -----------------------------------------
     else:
         ax.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**3, linestyle="None", c='k', ecolor='grey')
+        print('\n\n', tag)
+        for aa in range(len(df[tag+'Cu'])):
+            print(df[tag+'Cu'][aa], df[tag+val+'Cu'][aa], df[tag+val+'ErrCu'][aa])
         # ax2.set_xlim(0.1,10)
         # ax2.errorbar(df[tag+'Cu'], df[tag+val+'Cu'], yerr=df[tag+val+'ErrCu'], marker='.', ms=2**2, linestyle="None", c='grey', ecolor='grey')
         yfit = lin_fit(df[tag+'Cu'][1:], df[tag+val+'Cu'][1:], xlims[i])
